@@ -228,6 +228,10 @@ configs:
     ## Controller Properties
     # -- Number of application status processors
     controller.status.processors: 20
+
+    ## Kustomize Options
+    # -- Additional flags for kustomize build (enables Helm chart generator)
+    kustomize.buildOptions: "--enable-helm"
     # -- Number of application operation processors
     controller.operation.processors: 10
     # -- Specifies timeout between application self heal attempts
@@ -471,19 +475,6 @@ configs:
   # -- Repositories list to be used by applications
   ## Creates a secret for each key/value specified below to create repositories
   ## Note: the last example in the list would use a repository credential template, configured under "configs.credentialTemplates".
-  repositories: {}
-    # istio-helm-repo:
-    #   url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
-    #   name: istio.io
-    #   type: helm
-    # private-helm-repo:
-    #   url: https://my-private-chart-repo.internal
-    #   name: private-repo
-    #   type: helm
-    #   password: my-password
-    #   username: my-username
-    # private-repo:
-    #   url: https://github.com/argoproj/private-repo
 
   # -- Annotations to be added to `configs.repositories` Secret
   repositoriesAnnotations: {}
@@ -3244,6 +3235,7 @@ notifications:
   cm:
     # -- Whether helm chart creates notifications controller config map
     create: true
+    buildOptions: "--enable-helm --load-restrictor=LoadRestrictionsNone"
 
   ## Enable this and set the rules: to whatever custom rules you want for the Cluster Role resource.
   ## Defaults to off

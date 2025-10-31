@@ -36,34 +36,20 @@ spec:
 
         labels := object.get(input.review.object.metadata, "labels", {})
 
-        missing_label(label) {
-          not labels[label]
-        }
-
-        invalid_value(label) {
-          some label
-          allowed[label]
-          labels[label]
-          not contains(allowed[label], labels[label])
-        }
-
-        contains(arr, x) {
-          some i
-          arr[i] == x
-        }
-
         violation[{"msg": msg}] {
-          some i
-          label := required[i]
-          missing_label(label)
+          label := required[_]
+          not labels[label]
           msg := sprintf("missing required label: %s", [label])
         }
 
         violation[{"msg": msg}] {
-          some i
-          label := required[i]
-          invalid_value(label)
+          label := required[_]
+          allowed[label]
+          labels[label]
+          not array_contains(allowed[label], labels[label])
           msg := sprintf("label %s must be one of %v", [label, allowed[label]])
         }
 
-
+        array_contains(arr, val) {
+          arr[_] == val
+        }

@@ -1,8 +1,8 @@
+installCRDs: true
 replicaCount: 1
 auditInterval: 10
 disableValidatingWebhook: false
 postInstall:
   labelNamespace:
     enabled: true
-
 
