@@ -1,0 +1,42 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nonroot
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Nonroot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nonroot\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n\
+      \  not container.securityContext.runAsNonRoot\n  msg := sprintf(\"Container\
+      \ '%v' must not run as root. Set securityContext.runAsNonRoot to true.\", [container.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n\
+      \  container.securityContext.runAsUser == 0\n  msg := sprintf(\"Container '%v'\
+      \ must not run as root (UID 0). Set securityContext.runAsUser to a non-zero\
+      \ value.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container\
+      \ := input.review.object.spec.initContainers[_]\n  not container.securityContext.runAsNonRoot\n\
+      \  msg := sprintf(\"InitContainer '%v' must not run as root. Set securityContext.runAsNonRoot\
+      \ to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container\
+      \ := input.review.object.spec.initContainers[_]\n  container.securityContext.runAsUser\
+      \ == 0\n  msg := sprintf(\"InitContainer '%v' must not run as root (UID 0).\
+      \ Set securityContext.runAsUser to a non-zero value.\", [container.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  input.review.object.spec.securityContext.runAsUser\
+      \ == 0\n  not input.review.object.spec.securityContext.runAsNonRoot\n  msg :=\
+      \ sprintf(\"Pod must not run as root (UID 0) without runAsNonRoot set to true.\
+      \ Set spec.securityContext.runAsUser to a non-zero value or spec.securityContext.runAsNonRoot\
+      \ to true.\")\n}\n\nviolation[{\"msg\": msg}] {\n  not input.review.object.spec.securityContext.runAsNonRoot\n\
+      \  input.review.object.spec.securityContext.runAsUser == null\n  defaultRunAsUser\
+      \ := object.get(input.review.object.spec.securityContext, \"runAsUser\", 10001)\n\
+      \  not defaultRunAsUser\n  msg := sprintf(\"Pod must not run as root.  Set spec.securityContext.runAsNonRoot\
+      \ to true.\")\n}\n"
