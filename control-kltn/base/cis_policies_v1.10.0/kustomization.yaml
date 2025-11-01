@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
 - constraints/cis-resources-constraint.yaml
 - templates/cis-resources-template.yaml
+- constraints/cis-required-annotations-constraint.yaml
+- templates/cis-required-annotations-template.yaml
