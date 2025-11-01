@@ -1,0 +1,24 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: RequiredAnnotations
+metadata:
+  name: cis-requiredannotations
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: dryrun
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+      - Deployment
+      - Service
+      - Namespace
+      - Ingress
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - argocd
+  parameters:
+    annotations: []
