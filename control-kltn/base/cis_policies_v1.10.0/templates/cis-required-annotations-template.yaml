@@ -1,0 +1,30 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requiredannotations
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequiredAnnotations
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            annotations:
+              type: array
+              items:
+                type: string
+              description: List of required annotation keys.
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package requiredannotations\n\nviolation[{\"msg\": msg}] {\n  target :=\
+      \ input.review.object\n  kinds := {\"Pod\", \"Deployment\", \"Service\", \"\
+      Namespace\", \"Ingress\"}\n  contains(kinds, input.review.kind.kind)\n\n  required\
+      \ := object.get(input.parameters, \"annotations\", [])\n  count(required) >\
+      \ 0\n\n  missing := [annotation | not has_annotation(target.metadata.annotations,\
+      \ annotation); annotation := required[_]]\n  count(missing) > 0\n\n  msg :=\
+      \ sprintf(\"Missing required annotations: %v\", [missing])\n}\n\nhas_annotation(annotations,\
+      \ annotation) {\n  annotations[annotation]\n}\n"
