@@ -1,0 +1,67 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nonroot
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Nonroot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nonroot\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n\
+      \  securityContext := object.get(container, \"securityContext\", {})\n  runAsNonRoot\
+      \ := object.get(securityContext, \"runAsNonRoot\", false)\n  not runAsNonRoot\n\
+      \  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot to\
+      \ true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container\
+      \ := input.review.object.spec.initContainers[_]\n  securityContext := object.get(container,\
+      \ \"securityContext\", {})\n  runAsNonRoot := object.get(securityContext, \"\
+      runAsNonRoot\", false)\n  not runAsNonRoot\n  msg := sprintf(\"InitContainer\
+      \ '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  securityContext := object.get(input.review.object.spec,\
+      \ \"securityContext\", {})\n  runAsUser := object.get(securityContext, \"runAsUser\"\
+      , -1)\n  runAsGroup := object.get(securityContext, \"runAsGroup\", -1)\n\n \
+      \ # Pod-level `runAsUser` or `runAsGroup` defined without `runAsNonRoot` at\
+      \ pod or container level is not allowed.\n  not object.get(input.review.object.spec.securityContext,\
+      \ \"runAsNonRoot\", false)\n  runAsUser > 0\n  msg := \"Pod must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsUser is set.\"\n}\n\nviolation[{\"msg\"\
+      : msg}] {\n  securityContext := object.get(input.review.object.spec, \"securityContext\"\
+      , {})\n  runAsUser := object.get(securityContext, \"runAsUser\", -1)\n  runAsGroup\
+      \ := object.get(securityContext, \"runAsGroup\", -1)\n\n  # Pod-level `runAsUser`\
+      \ or `runAsGroup` defined without `runAsNonRoot` at pod or container level is\
+      \ not allowed.\n  not object.get(input.review.object.spec.securityContext, \"\
+      runAsNonRoot\", false)\n  runAsGroup > 0\n  msg := \"Pod must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsGroup is set.\"\n}\n\nviolation[{\"msg\"\
+      : msg}] {\n  container := input.review.object.spec.containers[_]\n  securityContext\
+      \ := object.get(container, \"securityContext\", {})\n  runAsUser := object.get(securityContext,\
+      \ \"runAsUser\", -1)\n  runAsGroup := object.get(securityContext, \"runAsGroup\"\
+      , -1)\n  not object.get(securityContext, \"runAsNonRoot\", false)\n  runAsUser\
+      \ > 0\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsUser is set.\", [container.name])\n}\n\n\
+      violation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n\
+      \  securityContext := object.get(container, \"securityContext\", {})\n  runAsUser\
+      \ := object.get(securityContext, \"runAsUser\", -1)\n  runAsGroup := object.get(securityContext,\
+      \ \"runAsGroup\", -1)\n  not object.get(securityContext, \"runAsNonRoot\", false)\n\
+      \  runAsGroup > 0\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsGroup is set.\", [container.name])\n}\n\n\
+      violation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n\
+      \  securityContext := object.get(container, \"securityContext\", {})\n  runAsUser\
+      \ := object.get(securityContext, \"runAsUser\", -1)\n  runAsGroup := object.get(securityContext,\
+      \ \"runAsGroup\", -1)\n  not object.get(securityContext, \"runAsNonRoot\", false)\n\
+      \  runAsUser > 0\n  msg := sprintf(\"InitContainer '%v' must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsUser is set.\", [container.name])\n}\n\n\
+      violation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n\
+      \  securityContext := object.get(container, \"securityContext\", {})\n  runAsUser\
+      \ := object.get(securityContext, \"runAsUser\", -1)\n  runAsGroup := object.get(securityContext,\
+      \ \"runAsGroup\", -1)\n  not object.get(securityContext, \"runAsNonRoot\", false)\n\
+      \  runAsGroup > 0\n  msg := sprintf(\"InitContainer '%v' must set securityContext.runAsNonRoot\
+      \ to true when securityContext.runAsGroup is set.\", [container.name])\n}"

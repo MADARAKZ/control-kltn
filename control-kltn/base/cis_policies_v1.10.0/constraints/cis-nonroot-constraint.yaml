@@ -1,0 +1,19 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: Nonroot
+metadata:
+  name: cis-nonroot
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: dryrun
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    excludedNamespaces:
+    - gatekeeper-system
+    - kube-system
+    - argocd
+  parameters: {}
