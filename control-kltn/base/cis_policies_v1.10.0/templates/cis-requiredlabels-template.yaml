@@ -1,0 +1,23 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requiredlabels
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Requiredlabels
+      validation:
+        openAPIV3Schema:
+          properties: {}
+          type: object
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package requiredlabels\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind\
+      \ == \"Pod\" || input.kind.kind == \"Deployment\" || input.kind.kind == \"StatefulSet\"\
+      \n  missing := missing_labels\n  count(missing) > 0\n  msg := sprintf(\"Missing\
+      \ required labels: %v\", [missing])\n}\n\nmissing_labels := missing {\n  required\
+      \ := [\"app\", \"environment\"]\n  provided := {label | input.metadata.labels[label]}\n\
+      \  missing := required - provided\n}\n"
