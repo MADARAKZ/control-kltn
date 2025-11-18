@@ -1,0 +1,56 @@
+{
+  "generated_at": "2025-11-18T13:32:14.727710Z",
+  "policy_spec": {
+    "policy_id": "cis-hostpath-volumes",
+    "policy_type": "no-hostpath-volumes",
+    "intent": "create",
+    "description": "deny hostPath volumes in all namespaces",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "volumes": [
+        "hostPath"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-pywjbhd1/base/cis_policies_v1.10.0/templates/cis-no-hostpath-volumes-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-pywjbhd1/base/cis_policies_v1.10.0/constraints/cis-no-hostpath-volumes-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding labels to the constraint to improve discoverability and management."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}

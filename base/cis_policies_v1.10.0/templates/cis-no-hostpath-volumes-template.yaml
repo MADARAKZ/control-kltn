@@ -1,0 +1,36 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: hostpath-volumes
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpathVolumes
+      validation:
+        openAPIV3Schema:
+          properties:
+            volumes:
+              type: array
+              items:
+                type: string
+              description: List of volume types to deny (e.g., 'hostPath')
+          type: object
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nohostpathvolumes\n\nviolation[{\"msg\": msg}] {\n  containers\
+      \ := object.get(input.review.object.spec, \"containers\", [])\n  container :=\
+      \ containers[_]\n  volumeMounts := object.get(container, \"volumeMounts\", [])\n\
+      \  volumeMount := volumeMounts[_]\n  volumes := object.get(input.review.object.spec,\
+      \ \"volumes\", [])\n  volume := volumes[_]\n  volume.name == volumeMount.name\n\
+      \  volume.hostPath != null\n  msg := sprintf(\"Container '%v' uses hostPath\
+      \ volume '%v' which is disallowed.\", [container.name, volume.name])\n}\n\n\
+      violation[{\"msg\": msg}] {\n  initContainers := object.get(input.review.object.spec,\
+      \ \"initContainers\", [])\n  container := initContainers[_]\n  volumeMounts\
+      \ := object.get(container, \"volumeMounts\", [])\n  volumeMount := volumeMounts[_]\n\
+      \  volumes := object.get(input.review.object.spec, \"volumes\", [])\n  volume\
+      \ := volumes[_]\n  volume.name == volumeMount.name\n  volume.hostPath != null\n\
+      \  msg := sprintf(\"Init Container '%v' uses hostPath volume '%v' which is disallowed.\"\
+      , [container.name, volume.name])\n}\n"
