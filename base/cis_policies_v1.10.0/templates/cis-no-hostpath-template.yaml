@@ -1,0 +1,40 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nohostpath\n\nviolation[{\"msg\": msg}] {\n  resource := input.review.object\n\
+      \  containers := object.get(resource, \"spec\", {})\n  all_containers := object.get(containers,\
+      \ \"containers\", [])\n  init_containers := object.get(containers, \"initContainers\"\
+      , [])\n  spec_volumes := object.get(resource, \"spec\", {})\n  volumes := object.get(spec_volumes,\
+      \ \"volumes\", [])\n  volume := volumes[_]\n  volume.hostPath != null\n  not\
+      \ is_exempt_namespace(input.review.namespace)\n  container := all_containers[_]\n\
+      \  kinds := [\"Pod\", \"Deployment\", \"StatefulSet\"]\n  input.review.kind.kind\
+      \ == kinds[_]\n  msg := sprintf(\"HostPath volume is not allowed. Found in container:\
+      \ %v, volume name: %v\", [container.name, volume.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  resource := input.review.object\n  containers := object.get(resource,\
+      \ \"spec\", {})\n  all_containers := object.get(containers, \"containers\",\
+      \ [])\n  init_containers := object.get(containers, \"initContainers\", [])\n\
+      \  spec_volumes := object.get(resource, \"spec\", {})\n  volumes := object.get(spec_volumes,\
+      \ \"volumes\", [])\n  volume := volumes[_]\n  volume.hostPath != null\n  not\
+      \ is_exempt_namespace(input.review.namespace)\n  container := init_containers[_]\n\
+      \  kinds := [\"Pod\", \"Deployment\", \"StatefulSet\"]\n  input.review.kind.kind\
+      \ == kinds[_]\n  msg := sprintf(\"HostPath volume is not allowed. Found in initContainer:\
+      \ %v, volume name: %v\", [container.name, volume.name])\n}\n\nis_exempt_namespace(ns)\
+      \ {\n  exempt_namespaces := [\"kube-system\", \"gatekeeper-system\", \"argocd\"\
+      ]\n  ns == exempt_namespaces[_]\n}\n"

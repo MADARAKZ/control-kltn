@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-11-18T14:07:18.526006Z",
+  "policy_spec": {
+    "policy_id": "cis-no-hostpath",
+    "policy_type": "no-hostpath",
+    "intent": "create",
+    "description": "deny hostPath volumes in all namespaces",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "volume_type": "hostPath"
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-gl787lx9/base/cis_policies_v1.10.0/templates/cis-no-hostpath-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-gl787lx9/base/cis_policies_v1.10.0/constraints/cis-no-hostpath-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "The `is_exempt_namespace` function and `excludedNamespaces` in the constraint spec are redundant.  Consider removing the function from the Rego code and relying solely on the `excludedNamespaces` field in the constraint spec for namespace exclusion.",
+      "The constraint spec's `parameters` field includes `volume_type: \"hostPath\"`. While not incorrect, it's unnecessary as the Rego code directly checks for `volume.hostPath != null`. This parameter doesn't provide any configurable behavior and can be safely removed."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
