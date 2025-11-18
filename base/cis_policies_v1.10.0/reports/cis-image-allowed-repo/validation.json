@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-11-18T15:29:24.671288Z",
+  "policy_spec": {
+    "policy_id": "cis-image-allowed-repo",
+    "policy_type": "image-allowed-repo",
+    "intent": "create",
+    "description": "deny all images exempt all images run in repo",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "allowed_repo_regex": ".*"
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-r07es0ik/base/cis_policies_v1.10.0/templates/cis-image-allowed-repo-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-r07es0ik/base/cis_policies_v1.10.0/constraints/cis-image-allowed-repo-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a default value to `allowed_repo_regex` that is more restrictive than `.*`.  While the policy currently works as intended (allowing all images), a more restrictive default would be safer if the parameter is accidentally omitted during constraint deployment. For example, setting it to `^$` would effectively block all images unless a valid regex is provided.",
+      "Add comments to the Rego code to explain the purpose of each section. This improves readability and maintainability."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}

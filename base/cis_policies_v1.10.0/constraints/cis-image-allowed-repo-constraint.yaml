@@ -1,0 +1,25 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: ImageAllowedRepo
+metadata:
+  name: cis-image-allowed-repo
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    excludedNamespaces:
+    - argocd
+    - gatekeeper-system
+    - kube-system
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+      - StatefulSet
+  parameters:
+    allowed_repo_regex: .*
