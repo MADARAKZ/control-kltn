@@ -1,0 +1,23 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: RestrictClusteradminRolebindings
+metadata:
+  name: cis-restrict-clusteradmin
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: dryrun
+  match:
+    kinds:
+    - apiGroups:
+      - rbac.authorization.k8s.io
+      kinds:
+      - RoleBinding
+      - ClusterRoleBinding
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - argocd
+  parameters:
+    forbidden_roles:
+    - cluster-admin
+    - clusteradmin
