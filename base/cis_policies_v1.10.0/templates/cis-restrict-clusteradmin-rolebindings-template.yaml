@@ -1,0 +1,49 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: restrict-clusteradmin
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RestrictClusteradminRolebindings
+      validation:
+        openAPIV3Schema:
+          properties:
+            forbidden_roles:
+              type: array
+              items:
+                type: string
+              description: List of forbidden roles. RoleBinding or ClusterRoleBinding
+                referencing these roles will be rejected.
+            namespaces:
+              type: object
+              properties:
+                include:
+                  type: array
+                  items:
+                    type: string
+                  description: List of namespaces to include for the validation. If
+                    empty, all namespaces are included except those in the exclude
+                    list.
+                exclude:
+                  type: array
+                  items:
+                    type: string
+                  description: List of namespaces to exclude for the validation. If
+                    empty, no namespaces are excluded.
+              description: Namespaces to include or exclude from the validation.
+          type: object
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package restrictclusteradminrolebindings\n\nviolation[{\"msg\": msg}] {\n\
+      \  binding := input.review.object\n  subjects := object.get(binding, \"subjects\"\
+      , [])\n  count(subjects) > 0\n  some i\n  subject := subjects[i]\n  roleRef\
+      \ := object.get(binding, \"roleRef\", {})\n  forbidden_roles := object.get(input.parameters,\
+      \ \"forbidden_roles\", [\"cluster-admin\"])\n  roleRefName := object.get(roleRef,\
+      \ \"name\", \"\")\n  roleRefKind := object.get(roleRef, \"kind\", \"\")\n  contains(forbidden_roles,\
+      \ roleRefName)\n  roleRefKind == \"ClusterRole\"\n  msg := sprintf(\"RoleBinding\
+      \ '%s' binds '%s' to forbidden role '%s'.\", [binding.metadata.name, subject.name,\
+      \ roleRefName])\n}\n"

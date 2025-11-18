@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-11-18T13:43:18.555211Z",
+  "policy_spec": {
+    "policy_id": "cis-restrict-clusteradmin",
+    "policy_type": "restrict-clusteradmin-rolebindings",
+    "intent": "create",
+    "description": "retrict clusteradmin rolebindings",
+    "target_kinds": [
+      "RoleBinding",
+      "ClusterRoleBinding"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "forbidden_roles": [
+        "cluster-admin",
+        "clusteradmin"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ahkkgil7/base/cis_policies_v1.10.0/templates/cis-restrict-clusteradmin-rolebindings-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ahkkgil7/base/cis_policies_v1.10.0/constraints/cis-restrict-clusteradmin-rolebindings-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a comment in the Rego code to explain the purpose of the policy and each section of the code. This will improve readability and maintainability.",
+      "While object.get() is used for safe access, ensure that default values provided are sensible and don't unintentionally bypass the policy. In this case, the defaults seem fine."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
