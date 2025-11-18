@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-11-18T16:06:50.354787Z",
+  "policy_spec": {
+    "policy_id": "cis-requiredlabels",
+    "policy_type": "requiredlabels",
+    "intent": "create",
+    "description": "require label",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "labels": []
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-rdp2jh_7/base/cis_policies_v1.10.0/templates/cis-requiredlabels-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-rdp2jh_7/base/cis_policies_v1.10.0/constraints/cis-requiredlabels-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding more detailed descriptions to the schema for each parameter to improve usability.",
+      "The array_contains function can be replaced with the built-in `contains` function in Rego for simpler and potentially more performant code. It would require minor adjustments to the logic in the 'labelValues' violation rule."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
