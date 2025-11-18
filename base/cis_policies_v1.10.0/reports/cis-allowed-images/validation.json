@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-11-18T17:05:14.677642Z",
+  "policy_spec": {
+    "policy_id": "cis-allowed-images",
+    "policy_type": "allowed-images",
+    "intent": "create",
+    "description": "allow all images exempt image namespace devlake",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "exempt_image_namespaces": [
+        "devlake"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-6bv9k9lz/base/cis_policies_v1.10.0/templates/cis-allowed-images-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-6bv9k9lz/base/cis_policies_v1.10.0/constraints/cis-allowed-images-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "The `is_allowed_image` function could be removed. The policy logic correctly denies non-exempt images without it, making the code cleaner.",
+      "Consider adding examples in the description within the rego to clearly show what is permitted and what is not. This can improve the maintainability and understanding of the policy."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
