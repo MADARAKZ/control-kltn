@@ -1,0 +1,22 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoHostpath
+metadata:
+  name: cis-no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - '*'
+      kinds:
+      - Pod
+      - Deployment
+      - StatefulSet
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - argocd
+  parameters:
+    volume_type: hostPath
