@@ -1,0 +1,32 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            volume_type:
+              type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nohostpath\n\nviolation[{\"msg\": msg}] {\n  containers := object.get(input.review.object.spec,\
+      \ \"containers\", [])\n  container := containers[_]\n  volumeMount := object.get(container,\
+      \ \"volumeMounts\", [])[_]\n  volume := object.get(input.review.object.spec,\
+      \ \"volumes\", [])[_]\n  volume.name == volumeMount.name\n  volume.hostPath\
+      \ != null\n  msg := sprintf(\"hostPath volumes are forbidden. Container '%v'\
+      \ uses hostPath volume '%v'\", [container.name, volume.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  initContainers := object.get(input.review.object.spec, \"\
+      initContainers\", [])\n  container := initContainers[_]\n  volumeMount := object.get(container,\
+      \ \"volumeMounts\", [])[_]\n  volume := object.get(input.review.object.spec,\
+      \ \"volumes\", [])[_]\n  volume.name == volumeMount.name\n  volume.hostPath\
+      \ != null\n  msg := sprintf(\"hostPath volumes are forbidden in initContainers.\
+      \ Container '%v' uses hostPath volume '%v'\", [container.name, volume.name])\n\
+      }\n"
