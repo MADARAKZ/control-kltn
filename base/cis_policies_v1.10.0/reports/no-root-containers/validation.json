@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-19T16:11:55.296181Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt namespace kong",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -16,7 +16,7 @@
         "kube-system",
         "gatekeeper-system",
         "argocd",
-        "devlake"
+        "kong"
       ]
     },
     "enforcement": "dryrun",
@@ -27,13 +27,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-h75f2f40/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-h75f2f40/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
