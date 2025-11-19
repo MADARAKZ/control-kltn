@@ -1,0 +1,50 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: exempt-namespace
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: ImageAllowlistWithExemption
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties:
+                allowedImages:
+                  type: array
+                  items:
+                    type: string
+                  description: List of allowed image prefixes.
+              required:
+              - allowedImages
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package imageallowlistwithexemption\n\nviolation[{\"msg\": msg}] {\n  not\
+      \ is_exempt_namespace(input.metadata.namespace)\n  not allowed_image(input.request.object)\n\
+      \  msg := sprintf(\"Container image '%v' not allowed. Please use images from\
+      \ the allowed repositories: %v.\", [input.request.object.spec.containers[_].image,\
+      \ input.parameters.allowedImages])\n}\n\nviolation[{\"msg\": msg}] {\n  not\
+      \ is_exempt_namespace(input.metadata.namespace)\n  not allowed_image(input.request.object)\n\
+      \  msg := sprintf(\"InitContainer image '%v' not allowed. Please use images\
+      \ from the allowed repositories: %v.\", [input.request.object.spec.initContainers[_].image,\
+      \ input.parameters.allowedImages])\n}\n\nviolation[{\"msg\": msg}] {\n  not\
+      \ is_exempt_namespace(input.metadata.namespace)\n  ephemeral_containers := object.get(input.request.object.spec,\
+      \ \"ephemeralContainers\", [])\n  not allowed_image_ephemeral(ephemeral_containers)\n\
+      \  msg := sprintf(\"EphemeralContainer image '%v' not allowed. Please use images\
+      \ from the allowed repositories: %v.\", [ephemeral_containers[_].image, input.parameters.allowedImages])\n\
+      }\n\nallowed_image(o) {\n  containers := object.get(o.spec, \"containers\",\
+      \ [])\n  allowed_container_image(containers)\n}\n\nallowed_image(o) {\n  initContainers\
+      \ := object.get(o.spec, \"initContainers\", [])\n  allowed_init_container_image(initContainers)\n\
+      }\n\nallowed_image(o) {\n  ephemeral_containers := object.get(o.spec, \"ephemeralContainers\"\
+      , [])\n  allowed_ephemeral_container_image(ephemeral_containers)\n}\n\nallowed_container_image(containers)\
+      \ {\n  image := containers[_].image\n  startswith(image, input.parameters.allowedImages[_])\n\
+      }\n\nallowed_init_container_image(initContainers) {\n  image := initContainers[_].image\n\
+      \  startswith(image, input.parameters.allowedImages[_])\n}\n\nallowed_ephemeral_container_image(ephemeral_containers)\
+      \ {\n  image := ephemeral_containers[_].image\n  startswith(image, input.parameters.allowedImages[_])\n\
+      }\n\nis_exempt_namespace(namespace) {\n  namespace == \"devlake\"\n}\n"
