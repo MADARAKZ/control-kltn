@@ -1,0 +1,76 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NetworkPolicy
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            ingress:
+              type: object
+              description: Configuration for ingress traffic restrictions.
+              properties:
+                source_ip_blocks:
+                  type: array
+                  description: List of IP blocks allowed for ingress.  If empty, all
+                    ingress is allowed. Use 0.0.0.0/0 to ban all traffic.
+                  items:
+                    type: string
+            egress:
+              type: object
+              description: Configuration for egress traffic restrictions.
+              properties:
+                destination_ip_blocks:
+                  type: array
+                  description: List of IP blocks allowed for egress. If empty, all
+                    egress is allowed. Use 0.0.0.0/0 to ban all traffic.
+                  items:
+                    type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package networkpolicy
+
+      violation[{"msg": msg}] {
+        input.kind.kind == "NetworkPolicy"
+        not isExemptNamespace(input.metadata.namespace)
+        hasInternetTraffic(input.spec)
+
+        msg := "NetworkPolicy is allowing traffic from/to the internet, which is prohibited by this policy."
+      }
+
+      hasInternetTraffic(spec) {
+          hasIngressInternetTraffic(spec)
+      }
+
+      hasInternetTraffic(spec) {
+          hasEgressInternetTraffic(spec)
+      }
+
+      hasIngressInternetTraffic(spec) {
+          ingress := object.get(spec, "ingress", [])
+          some i
+          ingress[i].from
+          some j
+          ingress[i].from[j].ipBlock.cidr == "0.0.0.0/0"
+      }
+
+      hasEgressInternetTraffic(spec) {
+          egress := object.get(spec, "egress", [])
+          some i
+          egress[i].to
+          some j
+          egress[i].to[j].ipBlock.cidr == "0.0.0.0/0"
+      }
+
+      isExemptNamespace(ns) {
+        exempt_namespaces := object.get(input.parameters, "excludedNamespaces", [])
+        ns == exempt_namespaces[_]
+      }
