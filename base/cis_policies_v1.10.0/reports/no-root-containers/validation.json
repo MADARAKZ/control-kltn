@@ -1,49 +1,53 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-19T16:26:19.428706Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt images nginx:latest",
     "target_kinds": [
-      "Pod",
-      "Deployment",
-      "StatefulSet"
+      "Pod"
     ],
     "namespaces": {
       "include": [],
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "nginx:latest"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-t7naekdt/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-t7naekdt/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "The rego code could be slightly simplified by combining the runAsNonRoot checks into a single rule per container type (containers, initContainers, ephemeralContainers). This would reduce redundancy.",
+      "Consider adding a parameter in the schema and constraint to allow specifying a default runAsUser value, instead of just checking for runAsUser == 0. This would provide more flexibility."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
