@@ -1,0 +1,28 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoRootContainers
+metadata:
+  name: no-root-containers
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    excludedNamespaces:
+    - argocd
+    - config-management-system
+    - gatekeeper-system
+    - kube-system
+    - kube-public
+    - kube-node-lease
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+      - StatefulSet
+  parameters:
+    runAsNonRoot: true
