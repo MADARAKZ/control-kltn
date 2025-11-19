@@ -1,0 +1,34 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nointernettraffic\n\nviolation[{\"msg\": msg}] {\n  not isExemptNamespace(input.metadata.namespace)\n\
+      \  container := input.spec.containers[_]\n  not allowTraffic(container.image)\n\
+      \  msg := sprintf(\"Container '%v' in %v '%v' is pulling images from the internet,\
+      \ which is not allowed.\", [container.name, input.kind, input.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  not isExemptNamespace(input.metadata.namespace)\n\
+      \  container := input.spec.initContainers[_]\n  not allowTraffic(container.image)\n\
+      \  msg := sprintf(\"InitContainer '%v' in %v '%v' is pulling images from the\
+      \ internet, which is not allowed.\", [container.name, input.kind, input.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  not isExemptNamespace(input.metadata.namespace)\n\
+      \  container := input.spec.ephemeralContainers[_]\n  not allowTraffic(container.image)\n\
+      \  msg := sprintf(\"EphemeralContainer '%v' in %v '%v' is pulling images from\
+      \ the internet, which is not allowed.\", [container.name, input.kind, input.metadata.name])\n\
+      }\n\nallowTraffic(image) {\n  startswith(image, \"gcr.io/\")\n}\n\nallowTraffic(image)\
+      \ {\n  startswith(image, \"docker.io/google\")\n}\n\nallowTraffic(image) {\n\
+      \  startswith(image, \"docker.io/istio\")\n}\n\nisExemptNamespace(ns) {\n  ns\
+      \ == \"kube-system\"\n}\n\nisExemptNamespace(ns) {\n  ns == \"gatekeeper-system\"\
+      \n}\n\nisExemptNamespace(ns) {\n  ns == \"argocd\"\n}\n"
