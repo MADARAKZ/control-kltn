@@ -1,0 +1,49 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: resource-limits
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: ResourceLimits
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |-
+      package resourcelimits
+
+      violation[{"msg": msg}] {
+        resource := input.review.object
+        kind := lower(input.review.kind.kind)
+        not has_resource_limits(resource, kind)
+        msg := sprintf("Resource limits are not defined for %s: %s/%s.  Resource limits should be defined to prevent a single container from consuming all available resources.", [kind, resource.metadata.namespace, resource.metadata.name])
+      }
+
+      has_resource_limits(resource, kind) {
+        limits := object.get(resource.spec, "template.spec.containers", object.get(resource.spec, "containers", []))
+        count(limits) > 0
+        has_limits(limits)
+      }
+
+      has_resource_limits(resource, kind) {
+        kind == "pod"
+        limits := object.get(resource.spec, "containers", [])
+        count(limits) > 0
+        has_limits(limits)
+      }
+
+      has_limits(limits) {
+        some container in limits
+        container.resources != null
+        container.resources.limits != null
+        count(container.resources.limits) > 0
+      }
