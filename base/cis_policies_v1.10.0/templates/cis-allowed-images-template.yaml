@@ -1,0 +1,55 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: image-allowed-images
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: AllowedImages
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package allowedimages
+
+      violation[{"msg": msg}] {
+        not allowed_image(input.review.object)
+        msg := sprintf("Container image '%v' not allowed", [input.review.object.spec.containers[_].image])
+      }
+
+      violation[{"msg": msg}] {
+        not allowed_image(input.review.object)
+        msg := sprintf("Init container image '%v' not allowed", [input.review.object.spec.initContainers[_].image])
+      }
+
+      violation[{"msg": msg}] {
+        not allowed_image(input.review.object)
+        msg := sprintf("Ephemeral container image '%v' not allowed", [input.review.object.spec.ephemeralContainers[_].image])
+      }
+
+      allowed_image(o) {
+        allowed := object.get(input.parameters, "allowed_images", [])
+        image := o.spec.containers[_].image
+        glob.match(allowed[_], [image])
+      }
+
+      allowed_image(o) {
+        allowed := object.get(input.parameters, "allowed_images", [])
+        image := o.spec.initContainers[_].image
+        glob.match(allowed[_], [image])
+      }
+
+      allowed_image(o) {
+        allowed := object.get(input.parameters, "allowed_images", [])
+        image := o.spec.ephemeralContainers[_].image
+        glob.match(allowed[_], [image])
+      }
