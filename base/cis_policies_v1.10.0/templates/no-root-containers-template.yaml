@@ -23,42 +23,25 @@ spec:
       package norootcontainers
 
       violation[{"msg": msg}] {
-        container := input.review.object.spec.containers[_]
-        not object.get(container, "securityContext", {})["runAsNonRoot"]
-        msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
+        c := input.review.object
+        containers := object.get(c, "spec.containers", [])
+        initContainers := object.get(c, "spec.initContainers", [])
+        allContainers := array.concat(containers, initContainers)
+        container := allContainers[_]
+        securityContext := object.get(container, "securityContext", {})
+        runAsNonRoot := object.get(securityContext, "runAsNonRoot", false)
+        not runAsNonRoot
+        msg := sprintf("Container '%v' must not run as root", [container.name])
       }
 
       violation[{"msg": msg}] {
-        container := input.review.object.spec.initContainers[_]
-        not object.get(container, "securityContext", {})["runAsNonRoot"]
-        msg := sprintf("InitContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.ephemeralContainers[_]
-        not object.get(container, "securityContext", {})["runAsNonRoot"]
-        msg := sprintf("EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        input.review.object.spec.securityContext.runAsUser == 0
-        msg := "Root user is not allowed."
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.containers[_]
-        object.get(container, "securityContext", {})["runAsUser"] == 0
-        msg := sprintf("Container '%v' root user is not allowed.", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.initContainers[_]
-        object.get(container, "securityContext", {})["runAsUser"] == 0
-        msg := sprintf("InitContainer '%v' root user is not allowed.", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.ephemeralContainers[_]
-        object.get(container, "securityContext", {})["runAsUser"] == 0
-        msg := sprintf("EphemeralContainer '%v' root user is not allowed.", [container.name])
+        c := input.review.object
+        containers := object.get(c, "spec.containers", [])
+        initContainers := object.get(c, "spec.initContainers", [])
+        allContainers := array.concat(containers, initContainers)
+        container := allContainers[_]
+        securityContext := object.get(container, "securityContext", {})
+        runAsUser := object.get(securityContext, "runAsUser", -1)
+        runAsUser == 0
+        msg := sprintf("Container '%v' must not run as root", [container.name])
       }
