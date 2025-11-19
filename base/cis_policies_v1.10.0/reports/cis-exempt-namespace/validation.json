@@ -1,0 +1,54 @@
+{
+  "generated_at": "2025-11-19T07:38:25.941395Z",
+  "policy_spec": {
+    "policy_id": "cis-exempt-namespace",
+    "policy_type": "image-allowlist-with-exemption",
+    "intent": "create",
+    "description": "allow all images exempt image namespace devlake",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd",
+        "devlake"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-lubvzjl2/base/cis_policies_v1.10.0/templates/cis-image-allowlist-with-exemption-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-lubvzjl2/base/cis_policies_v1.10.0/constraints/cis-image-allowlist-with-exemption-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider using a more robust method for matching allowed images, such as regular expressions, if simple prefix matching is insufficient.",
+      "While excludedNamespaces in the constraint spec works, it's common to see includedNamespaces used in conjunction with a dedicated exempt namespace.  This promotes a more explicit 'allow' approach which can be easier to reason about."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
