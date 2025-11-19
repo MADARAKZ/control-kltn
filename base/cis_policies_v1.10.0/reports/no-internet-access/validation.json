@@ -1,0 +1,58 @@
+{
+  "generated_at": "2025-11-19T16:44:57.458467Z",
+  "policy_spec": {
+    "policy_id": "no-internet-access",
+    "policy_type": "no-internet-access",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Service",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-0jdejxyt/base/cis_policies_v1.10.0/templates/no-internet-access-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-0jdejxyt/base/cis_policies_v1.10.0/constraints/no-internet-access-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a check to ensure that `hostNetwork` is also not set to `true` in `podSpec` within controllers like `Deployment`, `StatefulSet`, etc. While the policy currently checks the top-level `spec.hostNetwork`, many controllers embed a pod specification within them that also might contain `hostNetwork: true`.",
+      "The policy could be improved by checking network policies. If a network policy allows egress traffic to 0.0.0.0/0, the policy would fail to prevent internet access.",
+      "Add documentation or comments to the Rego code to explain the purpose of each section and any assumptions made."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
