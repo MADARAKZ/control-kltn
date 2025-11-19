@@ -1,0 +1,45 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: allowed-images
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: AllowedImages
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package allowedimages
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        not allowed_image(container.image)
+        msg := sprintf("Container <%v> uses disallowed image '%v'.", [container.name, container.image])
+      }
+
+      violation[{"msg": msg}] {
+        container := object.get(input.review.object.spec, "initContainers", [])[_]
+        not allowed_image(container.image)
+        msg := sprintf("InitContainer <%v> uses disallowed image '%v'.", [container.name, container.image])
+      }
+
+      violation[{"msg": msg}] {
+        container := object.get(input.review.object.spec, "ephemeralContainers", [])[_]
+        not allowed_image(container.image)
+        msg := sprintf("EphemeralContainer <%v> uses disallowed image '%v'.", [container.name, container.image])
+      }
+
+      allowed_image(image) {
+        excluded_namespace := input.parameters.excludedImageNamespaces[_]
+        startswith(image, excluded_namespace + "/")
+      }
