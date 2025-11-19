@@ -1,0 +1,54 @@
+{
+  "generated_at": "2025-11-19T06:04:54.605763Z",
+  "policy_spec": {
+    "policy_id": "cis-allowed-images",
+    "policy_type": "allowed-images",
+    "intent": "create",
+    "description": "allow all images exempt image namespace devlake",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "excludedImageNamespaces": [
+        "devlake"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-w53rn7om/base/cis_policies_v1.10.0/templates/cis-allowed-images-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-w53rn7om/base/cis_policies_v1.10.0/constraints/cis-allowed-images-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
