@@ -1,0 +1,59 @@
+{
+  "generated_at": "2025-11-19T16:46:22.111123Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "network-policy",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "NetworkPolicy"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "ingress": {
+        "source_ip_blocks": [
+          "0.0.0.0/0"
+        ]
+      },
+      "egress": {
+        "destination_ip_blocks": [
+          "0.0.0.0/0"
+        ]
+      }
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-pywfmv68/base/cis_policies_v1.10.0/templates/network-policy-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-pywfmv68/base/cis_policies_v1.10.0/constraints/network-policy-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
