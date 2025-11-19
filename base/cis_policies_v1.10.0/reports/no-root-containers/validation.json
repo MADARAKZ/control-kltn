@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-19T16:02:21.602559Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt namespace kong",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -16,7 +16,7 @@
         "kube-system",
         "gatekeeper-system",
         "argocd",
-        "devlake"
+        "kong"
       ]
     },
     "enforcement": "dryrun",
@@ -27,23 +27,26 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-xis8cqd7/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-xis8cqd7/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "The `runAsNonRoot` parameter in the constraint spec seems redundant. The rego code already checks for both `runAsNonRoot` and `runAsUser=0`. If `runAsNonRoot` is set to `true` in parameters, it doesn't add any additional validation since the rego already enforces that.",
+      "Consider adding a test suite to the policy to ensure it behaves as expected under various scenarios."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
