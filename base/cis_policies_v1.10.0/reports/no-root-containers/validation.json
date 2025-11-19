@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-19T15:06:45.901127Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt namespace kong",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -16,7 +16,7 @@
         "kube-system",
         "gatekeeper-system",
         "argocd",
-        "devlake"
+        "kong"
       ]
     },
     "enforcement": "dryrun",
@@ -27,23 +27,25 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-vjovsosn/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-vjovsosn/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "Consider adding a default value for `runAsNonRoot` in the schema to clarify the expected behavior if the parameter is not explicitly provided. Currently, the policy checks if `container.securityContext.runAsNonRoot == false`. This might be more robust if you use `container.securityContext.runAsNonRoot != true` or a similar approach to handle cases where `runAsNonRoot` is not defined."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
