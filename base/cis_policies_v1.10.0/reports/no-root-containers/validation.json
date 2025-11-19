@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:20:03.308731Z",
+  "generated_at": "2025-11-19T14:58:18.918141Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
-    "intent": "create",
-    "description": "ban all containers running as root",
+    "intent": "modify",
+    "description": "update no-root-containers to exempt devlake namespace",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -15,39 +15,35 @@
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd"
+        "argocd",
+        "devlake"
       ]
     },
-    "enforcement": "deny",
-    "parameters": {
-      "runAsNonRoot": true
-    },
+    "enforcement": "dryrun",
+    "parameters": {},
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-ift78fd8/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-ift78fd8/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 95,
+    "score": 100,
     "errors": [],
     "warnings": [],
-    "suggestions": [
-      "The Rego code could be slightly optimized by combining the two violation rules into one by checking for the existence of `securityContext` and `runAsNonRoot` in the same rule. However, the current implementation is readable and correct.",
-      "Consider adding a `description` field to the Constraint template metadata for better documentation."
-    ],
+    "suggestions": [],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
