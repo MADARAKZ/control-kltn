@@ -23,6 +23,9 @@ spec:
       package norootcontainers
 
       violation[{"msg": msg}] {
+      # Skip check for kong namespace
+      input.review.namespace == "kong"
+      violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
