@@ -1,0 +1,58 @@
+{
+  "generated_at": "2025-11-19T07:15:28.267514Z",
+  "policy_spec": {
+    "policy_id": "cis-image-allowed-images",
+    "policy_type": "allowed-images",
+    "intent": "create",
+    "description": "allow all images exempt image namespace devlake",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd",
+        "devlake"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "allowed_images": [
+        "*"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-i8vsxp7k/base/cis_policies_v1.10.0/templates/cis-allowed-images-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-i8vsxp7k/base/cis_policies_v1.10.0/constraints/cis-allowed-images-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding comments to the Rego code to improve readability and maintainability, especially explaining the purpose of each rule and the overall policy logic.",
+      "While the policy works, using `glob.match` with `*` as the allowed image technically allows any image.  Consider adding a more specific base case or default to an empty list for increased security if `allowed_images` is not specified."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
