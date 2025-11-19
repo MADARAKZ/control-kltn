@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-19T16:08:17.010426Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt namespace kong",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -16,7 +16,7 @@
         "kube-system",
         "gatekeeper-system",
         "argocd",
-        "devlake"
+        "kong"
       ]
     },
     "enforcement": "dryrun",
@@ -27,25 +27,66 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-i7dx_bz7/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-i7dx_bz7/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
-    "corrected_rego": null,
-    "corrected_schema": null,
-    "corrected_constraint_spec": null
+    "suggestions": [
+      "Consider adding a default `securityContext` to the `containers`, `initContainers`, and `ephemeralContainers` to prevent unexpected behavior when the `securityContext` is entirely omitted. This would require adjusting the rego to handle the default.",
+      "The current policy enforces that `runAsNonRoot` is true at the container level using the 'not object.get(...)' construct in the rego. The schema only describes runAsNonRoot. It might be better to remove the schema element, or to include more schema elements corresponding to all parameters used in the Rego such as runAsUser.",
+      "The excludedNamespaces in the constraint spec has duplicates. `kong` is explicitly checked in the rego and also added to the `excludedNamespaces`. Removing it from the rego is preferred."
+    ],
+    "corrected_rego": "package norootcontainers\n\nviolation[{\"msg\": msg}] {\n  input.review.namespace == \"kong\"\n  msg := \"Namespace kong is excluded from this policy\"\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  msg := sprintf(\"InitContainer '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.ephemeralContainers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  msg := sprintf(\"EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  input.review.object.spec.securityContext.runAsUser == 0\n  msg := \"Root user is not allowed.\"\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  msg := sprintf(\"Container '%v' root user is not allowed.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  msg := sprintf(\"InitContainer '%v' root user is not allowed.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.ephemeralContainers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  msg := sprintf(\"EphemeralContainer '%v' root user is not allowed.\", [container.name])\n}\n",
+    "corrected_schema": {
+      "type": "object",
+      "properties": {}
+    },
+    "corrected_constraint_spec": {
+      "enforcementAction": "deny",
+      "match": {
+        "excludedNamespaces": [
+          "argocd",
+          "config-management-system",
+          "gatekeeper-system",
+          "kube-system",
+          "kube-public",
+          "kube-node-lease",
+          "devlake",
+          "kong"
+        ],
+        "kinds": [
+          {
+            "apiGroups": [
+              ""
+            ],
+            "kinds": [
+              "Pod"
+            ]
+          },
+          {
+            "apiGroups": [
+              "apps"
+            ],
+            "kinds": [
+              "Deployment",
+              "StatefulSet"
+            ]
+          }
+        ]
+      },
+      "parameters": {}
+    }
   }
 }
