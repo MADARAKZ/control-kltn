@@ -1,0 +1,93 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Networkpolicy
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            ingress:
+              type: object
+              description: Configuration for ingress traffic.
+              properties:
+                from:
+                  type: array
+                  description: List of sources for ingress traffic.
+                  items:
+                    type: object
+                    properties:
+                      ipBlock:
+                        type: object
+                        description: Configuration for IP block.
+                        properties:
+                          cidr:
+                            type: string
+                            description: CIDR representing the IP block.
+                          except:
+                            type: array
+                            description: List of CIDRs to exclude from the IP block.
+                            items:
+                              type: string
+            egress:
+              type: object
+              description: Configuration for egress traffic.
+              properties:
+                to:
+                  type: array
+                  description: List of destinations for egress traffic.
+                  items:
+                    type: object
+                    properties:
+                      ipBlock:
+                        type: object
+                        description: Configuration for IP block.
+                        properties:
+                          cidr:
+                            type: string
+                            description: CIDR representing the IP block.
+                          except:
+                            type: array
+                            description: List of CIDRs to exclude from the IP block.
+                            items:
+                              type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package networkpolicy\n\nviolation[{\"msg\": msg}] {\n  not isExemptedNamespace(input.metadata.namespace)\n\
+      \  hasInternetTraffic(input.spec)\n  msg := \"NetworkPolicy is configured to\
+      \ allow traffic to or from the internet, which is disallowed.  Remove the offending\
+      \ IP blocks from the NetworkPolicy.\" \n}\n\nhasInternetTraffic(spec) {\n  hasIngressInternetTraffic(spec)\n\
+      }\n\nhasInternetTraffic(spec) {\n  hasEgressInternetTraffic(spec)\n}\n\nhasIngressInternetTraffic(spec)\
+      \ {\n  ingress := object.get(spec, \"ingress\", [])\n  from := object.get(ingress[_],\
+      \ \"from\", [])\n  ipBlock := object.get(from[_], \"ipBlock\", {})\n  cidr :=\
+      \ object.get(ipBlock, \"cidr\", \"\")\n  cidr == \"0.0.0.0/0\"\n\n  except :=\
+      \ object.get(ipBlock, \"except\", [])\n  not contains(except, \"10.0.0.0/8\"\
+      )\n}\n\nhasIngressInternetTraffic(spec) {\n  ingress := object.get(spec, \"\
+      ingress\", [])\n  from := object.get(ingress[_], \"from\", [])\n  ipBlock :=\
+      \ object.get(from[_], \"ipBlock\", {})\n  cidr := object.get(ipBlock, \"cidr\"\
+      , \"\")\n  cidr == \"0.0.0.0/0\"\n\n  except := object.get(ipBlock, \"except\"\
+      , [])\n  not contains(except, \"172.16.0.0/12\")\n}\n\nhasIngressInternetTraffic(spec)\
+      \ {\n  ingress := object.get(spec, \"ingress\", [])\n  from := object.get(ingress[_],\
+      \ \"from\", [])\n  ipBlock := object.get(from[_], \"ipBlock\", {})\n  cidr :=\
+      \ object.get(ipBlock, \"cidr\", \"\")\n  cidr == \"0.0.0.0/0\"\n\n  except :=\
+      \ object.get(ipBlock, \"except\", [])\n  not contains(except, \"192.168.0.0/16\"\
+      )\n}\n\nhasEgressInternetTraffic(spec) {\n  egress := object.get(spec, \"egress\"\
+      , [])\n  to := object.get(egress[_], \"to\", [])\n  ipBlock := object.get(to[_],\
+      \ \"ipBlock\", {})\n  cidr := object.get(ipBlock, \"cidr\", \"\")\n  cidr ==\
+      \ \"0.0.0.0/0\"\n\n  except := object.get(ipBlock, \"except\", [])\n  not contains(except,\
+      \ \"10.0.0.0/8\")\n}\n\nhasEgressInternetTraffic(spec) {\n  egress := object.get(spec,\
+      \ \"egress\", [])\n  to := object.get(egress[_], \"to\", [])\n  ipBlock := object.get(to[_],\
+      \ \"ipBlock\", {})\n  cidr := object.get(ipBlock, \"cidr\", \"\")\n  cidr ==\
+      \ \"0.0.0.0/0\"\n\n  except := object.get(ipBlock, \"except\", [])\n  not contains(except,\
+      \ \"172.16.0.0/12\")\n}\n\nhasEgressInternetTraffic(spec) {\n  egress := object.get(spec,\
+      \ \"egress\", [])\n  to := object.get(egress[_], \"to\", [])\n  ipBlock := object.get(to[_],\
+      \ \"ipBlock\", {})\n  cidr := object.get(ipBlock, \"cidr\", \"\")\n  cidr ==\
+      \ \"0.0.0.0/0\"\n\n  except := object.get(ipBlock, \"except\", [])\n  not contains(except,\
+      \ \"192.168.0.0/16\")\n}\n\nisExemptedNamespace(ns) {\n  exempted := [\"kube-system\"\
+      , \"gatekeeper-system\", \"argocd\"]\n  contains(exempted, ns)\n}\n"

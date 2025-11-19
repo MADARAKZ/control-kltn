@@ -3,7 +3,9 @@ kind: Kustomization
 resources:
 - constraints/cis-image-allowed-repo-constraint.yaml
 - constraints/cis-requiredlabels-constraint.yaml
+- constraints/networkpolicy-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - templates/cis-image-allowed-repo-template.yaml
 - templates/cis-requiredlabels-template.yaml
+- templates/networkpolicy-template.yaml
 - templates/no-root-containers-template.yaml
