@@ -1,0 +1,67 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            internet_cidr:
+              type: string
+              description: The CIDR block considered to be the internet.  Defaults
+                to 0.0.0.0/0.
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nointernettraffic\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind\
+      \ == \"Pod\"\n  not allowInternetEgress(input.spec.containers)\n  not allowInternetIngress()\n\
+      \  msg := \"Pod is not allowed to initiate outbound traffic to the internet\
+      \ or receive traffic from the internet.\"\n}\n\nviolation[{\"msg\": msg}] {\n\
+      \  input.kind.kind == \"Pod\"\n  not allowInternetEgress(object.get(input.spec,\
+      \ \"initContainers\", []))\n  not allowInternetIngress()\n  msg := \"Pod is\
+      \ not allowed to initiate outbound traffic to the internet or receive traffic\
+      \ from the internet (initContainers).\"\n}\n\nviolation[{\"msg\": msg}] {\n\
+      \  input.kind.kind == \"Pod\"\n  not allowInternetEgress(object.get(input.spec,\
+      \ \"ephemeralContainers\", []))\n  not allowInternetIngress()\n  msg := \"Pod\
+      \ is not allowed to initiate outbound traffic to the internet or receive traffic\
+      \ from the internet (ephemeralContainers).\"\n}\n\nviolation[{\"msg\": msg}]\
+      \ {\n  input.kind.kind == \"Service\"\n  isInternetService(input.spec)\n  msg\
+      \ := \"Service is not allowed to expose to the internet\"\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  input.kind.kind == \"Deployment\"\n  not allowInternetEgress(input.spec.template.spec.containers)\n\
+      \  not allowInternetIngress()\n  msg := \"Deployment is not allowed to initiate\
+      \ outbound traffic to the internet or receive traffic from the internet.\"\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind == \"Deployment\"\n  not\
+      \ allowInternetEgress(object.get(input.spec.template.spec, \"initContainers\"\
+      , []))\n  not allowInternetIngress()\n  msg := \"Deployment is not allowed to\
+      \ initiate outbound traffic to the internet or receive traffic from the internet\
+      \ (initContainers).\"\n}\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind ==\
+      \ \"Deployment\"\n  not allowInternetEgress(object.get(input.spec.template.spec,\
+      \ \"ephemeralContainers\", []))\n  not allowInternetIngress()\n  msg := \"Deployment\
+      \ is not allowed to initiate outbound traffic to the internet or receive traffic\
+      \ from the internet (ephemeralContainers).\"\n}\n\nviolation[{\"msg\": msg}]\
+      \ {\n  input.kind.kind == \"StatefulSet\"\n  not allowInternetEgress(input.spec.template.spec.containers)\n\
+      \  not allowInternetIngress()\n  msg := \"StatefulSet is not allowed to initiate\
+      \ outbound traffic to the internet or receive traffic from the internet.\"\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind == \"StatefulSet\"\n  not\
+      \ allowInternetEgress(object.get(input.spec.template.spec, \"initContainers\"\
+      , []))\n  not allowInternetIngress()\n  msg := \"StatefulSet is not allowed\
+      \ to initiate outbound traffic to the internet or receive traffic from the internet\
+      \ (initContainers).\"\n}\n\nviolation[{\"msg\": msg}] {\n  input.kind.kind ==\
+      \ \"StatefulSet\"\n  not allowInternetEgress(object.get(input.spec.template.spec,\
+      \ \"ephemeralContainers\", []))\n  not allowInternetIngress()\n  msg := \"StatefulSet\
+      \ is not allowed to initiate outbound traffic to the internet or receive traffic\
+      \ from the internet (ephemeralContainers).\"\n}\n\nallowInternetEgress(containers)\
+      \ {\n  every container in containers {\n    every port in object.get(container,\
+      \ \"ports\", []) {\n      port.hostNetwork == true\n    }\n  }\n}\n\nisInternetService(spec)\
+      \ {\n  spec.type == \"LoadBalancer\"\n}\n\nisInternetService(spec) {\n  spec.type\
+      \ == \"NodePort\"\n}\n\nallowInternetIngress() {\n  # This function requires\
+      \ implementation details to examine network policies, ingress rules, and other\
+      \ mechanisms that\n  # control inbound traffic. Currently, it always returns\
+      \ false which causes every object with inbound traffic to be denied.\n  false\n\
+      }\n"

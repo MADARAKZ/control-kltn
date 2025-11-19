@@ -1,0 +1,61 @@
+{
+  "generated_at": "2025-11-19T16:39:52.836709Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "no-internet-traffic",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Service",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [
+        "*"
+      ],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "internet_cidr": "0.0.0.0/0"
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-if0px5la/base/cis_policies_v1.10.0/templates/no-internet-traffic-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-if0px5la/base/cis_policies_v1.10.0/constraints/no-internet-traffic-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [
+      "The `allowInternetIngress()` function always returns `false`. This effectively blocks all ingress traffic for the targeted resources, which might be more restrictive than intended. Consider implementing logic to evaluate network policies and ingress rules."
+    ],
+    "suggestions": [
+      "Implement logic in `allowInternetIngress()` to properly evaluate ingress rules and network policies to avoid blocking all ingress traffic.",
+      "Consider adding more specific details about the allowed traffic to/from internal networks to the schema, constraint spec, and Rego code. For example, specify allowed CIDR ranges.",
+      "Add documentation or comments to the Rego code to clarify the purpose of each section and the logic behind the rules."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
