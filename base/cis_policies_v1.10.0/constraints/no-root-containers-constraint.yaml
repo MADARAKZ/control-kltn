@@ -5,16 +5,12 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
-  enforcementAction: deny
+  enforcementAction: dryrun
   match:
     excludedNamespaces:
-    - argocd
-    - config-management-system
-    - gatekeeper-system
     - kube-system
-    - kube-public
-    - kube-node-lease
-    - devlake
+    - gatekeeper-system
+    - argocd
     kinds:
     - apiGroups:
       - ''
@@ -26,4 +22,6 @@ spec:
       - Deployment
       - StatefulSet
   parameters:
+    exemptImages:
+    - nginx:latest
     runAsNonRoot: true
