@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-11-19T13:46:29.499179Z",
+  "policy_spec": {
+    "policy_id": "cis-nonroot",
+    "policy_type": "nonroot",
+    "intent": "create",
+    "description": "banish pod run root",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "mustRunAsNonRoot": true
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-9efn60nj/base/cis_policies_v1.10.0/templates/cis-nonroot-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-9efn60nj/base/cis_policies_v1.10.0/constraints/cis-nonroot-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a default value of `false` to `securityContext.runAsNonRoot` in the `has_run_as_non_root` function. This makes the policy more robust if `runAsNonRoot` is not explicitly defined and defaults to false instead of erroring.",
+      "Clarify the different scenarios being checked. The policy checks for three conditions: if `runAsNonRoot` is missing in container definition, if `runAsUser=0` when `mustRunAsNonRoot` is true, and if the overall `spec.securityContext.runAsNonRoot` is not true.  Adding more specific messages to each violation would improve user experience when troubleshooting."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}

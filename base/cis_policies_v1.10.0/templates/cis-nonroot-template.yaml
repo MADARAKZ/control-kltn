@@ -1,0 +1,63 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nonroot
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Nonroot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |+
+      package nonroot
+
+      violation[{"msg": msg}] {
+        resource := input.review.object
+        containers := object.get(resource, "spec", {})
+        containers := object.get(containers, "containers", [])
+        check_containers(containers, resource)
+      }
+
+      violation[{"msg": msg}] {
+        resource := input.review.object
+        initContainers := object.get(resource, "spec", {})
+        initContainers := object.get(initContainers, "initContainers", [])
+        check_containers(initContainers, resource)
+      }
+
+      check_containers(containers, resource) {
+        container := containers[_]
+        not object.get(container, "securityContext", {}).runAsNonRoot
+        msg := sprintf("Container %v must run as non-root user", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        resource := input.review.object
+        input.parameters.mustRunAsNonRoot
+        object.get(resource, "spec", {}).securityContext.runAsUser == 0
+        msg := sprintf("Root user is not allowed.", [])
+      }
+
+      violation[{"msg": msg}] {
+        resource := input.review.object
+        input.parameters.mustRunAsNonRoot
+        not has_run_as_non_root(resource)
+        msg := sprintf("runAsNonRoot must be true.", [])
+      }
+
+      has_run_as_non_root(resource) {
+        resource.spec.securityContext.runAsNonRoot == true
+      }
+
+
+...
