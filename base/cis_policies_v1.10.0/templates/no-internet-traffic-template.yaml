@@ -1,0 +1,49 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nointernettraffic\n\nimport data.lib.core\n\nviolation[{\"msg\"\
+      : msg}] {\n  not isExemptedNamespace(input.metadata.namespace)\n  \n  # Deny\
+      \ internet access for NetworkPolicy\n  input.kind == \"NetworkPolicy\"\n  not\
+      \ isInternetTrafficAllowed(input.spec)\n  msg := \"NetworkPolicy is allowing\
+      \ traffic from the internet.  Remove the ingress/egress rules with ipBlock that\
+      \ include 0.0.0.0/0 or ::/0.\"\n}\n\nviolation[{\"msg\": msg}] {\n  not isExemptedNamespace(input.metadata.namespace)\n\
+      \  \n  # Deny internet access for Pods via hostNetwork\n  input.kind == \"Pod\"\
+      \n  input.spec.hostNetwork == true\n  msg := \"Pod is using hostNetwork which\
+      \ allows direct access to the host's network interfaces, potentially including\
+      \ internet access. Remove hostNetwork: true from the pod spec.\"\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  not isExemptedNamespace(input.metadata.namespace)\n\n  # Deny\
+      \ internet access for Services of type LoadBalancer\n  input.kind == \"Service\"\
+      \n  input.spec.type == \"LoadBalancer\"\n  msg := \"Service of type LoadBalancer\
+      \ is exposed to the internet. Change the service type to ClusterIP or NodePort,\
+      \ or use an Ingress controller with appropriate restrictions.\"\n}\n\nisExemptedNamespace(ns)\
+      \ result {\n  excluded := [\"argocd\", \"gatekeeper-system\", \"kube-system\"\
+      ]\n  result := contains(excluded, ns)\n}\n\nisInternetTrafficAllowed(spec) result\
+      \ {\n    # Check Ingress rules for ipBlock 0.0.0.0/0 or ::/0\n    some rule\
+      \ in object.get(spec, \"ingress\", [])\n    some peer in object.get(rule, \"\
+      from\", [])\n    some ipBlock in object.get(peer, \"ipBlock\", [])\n    ipBlock.cidr\
+      \ == \"0.0.0.0/0\"\n    result := true\n}\n\nisInternetTrafficAllowed(spec)\
+      \ result {\n    # Check Ingress rules for ipBlock ::/0\n    some rule in object.get(spec,\
+      \ \"ingress\", [])\n    some peer in object.get(rule, \"from\", [])\n    some\
+      \ ipBlock in object.get(peer, \"ipBlock\", [])\n    ipBlock.cidr == \"::/0\"\
+      \n    result := true\n}\n\nisInternetTrafficAllowed(spec) result {\n    # Check\
+      \ Egress rules for ipBlock 0.0.0.0/0 or ::/0\n    some rule in object.get(spec,\
+      \ \"egress\", [])\n    some to in object.get(rule, \"to\", [])\n    some ipBlock\
+      \ in object.get(to, \"ipBlock\", [])\n    ipBlock.cidr == \"0.0.0.0/0\"\n  \
+      \  result := true\n}\n\nisInternetTrafficAllowed(spec) result {\n    # Check\
+      \ Egress rules for ipBlock ::/0\n    some rule in object.get(spec, \"egress\"\
+      , [])\n    some to in object.get(rule, \"to\", [])\n    some ipBlock in object.get(to,\
+      \ \"ipBlock\", [])\n    ipBlock.cidr == \"::/0\"\n    result := true\n}\n"
