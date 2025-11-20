@@ -1,17 +1,14 @@
 {
-  "generated_at": "2025-11-20T09:53:37.642850Z",
+  "generated_at": "2025-11-20T10:07:29.349379Z",
   "policy_spec": {
     "policy_id": "no-secrets-as-env",
     "policy_type": "no-secrets-as-env",
-    "intent": "create",
-    "description": "create policies no secrets as env",
+    "intent": "modify",
+    "description": "exempt pod run with images nginx to policies no secrets as env",
     "target_kinds": [
       "Pod",
       "Deployment",
-      "StatefulSet",
-      "DaemonSet",
-      "Job",
-      "CronJob"
+      "StatefulSet"
     ],
     "namespaces": {
       "include": [],
@@ -22,30 +19,37 @@
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exempt_images": [
+        "nginx"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-znkazbg4/base/cis_policies_v1.10.0/templates/no-secrets-as-env-template.yaml",
+      "target": "/tmp/mcp-j4t_a4rt/base/cis_policies_v1.10.0/templates/no-secrets-as-env-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-znkazbg4/base/cis_policies_v1.10.0/constraints/no-secrets-as-env-constraint.yaml",
+      "target": "/tmp/mcp-j4t_a4rt/base/cis_policies_v1.10.0/constraints/no-secrets-as-env-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "Consider adding comments to the Rego code for better readability and maintainability.",
+      "The policy checks for secrets as env vars using `env.valueFrom.secretKeyRef != null`. It might be beneficial to also check for `env.valueFrom.configMapKeyRef != null` if you want to prevent configmaps being used as environment variables as well."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
