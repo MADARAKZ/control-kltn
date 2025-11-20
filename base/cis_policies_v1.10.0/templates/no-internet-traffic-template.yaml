@@ -1,0 +1,55 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            internet_cidr:
+              type: string
+              description: The CIDR block representing the internet.  Defaults to
+                0.0.0.0/0.
+              default: 0.0.0.0/0
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nointernettraffic\n\nviolation[{\"msg\": msg}] {\n  internet_cidr\
+      \ := input.parameters.internet_cidr\n\n  # Target NetworkPolicy\n  input.kind.kind\
+      \ == \"NetworkPolicy\"\n  not contains_cidr(input.object.spec.egress, internet_cidr)\n\
+      \  msg := sprintf(\"NetworkPolicy %s egress traffic is not restricted from the\
+      \ internet (CIDR: %s).  Ensure that egress rules explicitly deny or restrict\
+      \ traffic to the internet.\", [input.metadata.name, internet_cidr])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  internet_cidr := input.parameters.internet_cidr\n\n  # Target\
+      \ Pod\n  input.kind.kind == \"Pod\"\n  pod := input.object\n  not is_pod_isolated(pod,\
+      \ internet_cidr)\n  msg := sprintf(\"Pod %s allows egress traffic to the internet\
+      \ (CIDR: %s).  Ensure that the Pod's NetworkPolicy isolates it from the internet.\"\
+      , [input.metadata.name, internet_cidr])\n}\n\nviolation[{\"msg\": msg}] {\n\
+      \  internet_cidr := input.parameters.internet_cidr\n\n  # Target Service\n \
+      \ input.kind.kind == \"Service\"\n  service := input.object\n  service.spec.type\
+      \ == \"LoadBalancer\" # Only check LoadBalancer services, as they inherently\
+      \ expose to the internet\n  not is_service_protected(service, internet_cidr)\n\
+      \  msg := sprintf(\"Service %s of type LoadBalancer exposes the service to the\
+      \ internet (CIDR: %s). Consider using internal load balancers or other methods\
+      \ to restrict access.\", [input.metadata.name, internet_cidr])\n}\n\n# Helper\
+      \ functions\n\ncontains_cidr(egress, cidr) {\n  some rule in egress\n  some\
+      \ to in rule.to\n  to.ipBlock.cidr == cidr\n}\n\ncontains_cidr(egress, cidr)\
+      \ {\n  count(egress) == 0 # Handle case of no egress rules, which should be\
+      \ considered a violation\n}\n\nis_pod_isolated(pod, internet_cidr) {\n  #  This\
+      \ is a simplified check, query existing network policies\n  exists(data.kubernetes.networking.k8s.io.networkpolicies[_])\
+      \ # Check if any network policy exists\n  # A complete solution would require\n\
+      \  # querying existing NetworkPolicy objects.\n  # This example assumes that\
+      \ if a pod has ANY network policy, it's isolated.\n  #count(object.get(pod,\
+      \ \"spec.networks\", [])) > 0 # dummy check, requires external data for real\
+      \ evaluation\n}\n\nis_service_protected(service, internet_cidr) {\n  # Similar\
+      \ to the pod check, this would ideally involve querying\n  # network policies\
+      \ or other resources that restrict access to the service.\n  # This example\
+      \ just checks for an annotation as a placeholder.\n  #object.get(service.metadata.annotations,\
+      \ \"internal-access\", \"false\") == \"true\"\n  exists(data.kubernetes.networking.k8s.io.networkpolicies[_])\n\
+      }\n"
