@@ -1,0 +1,60 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            internet_cidr:
+              type: string
+              description: The CIDR range representing the entire internet. Defaults
+                to 0.0.0.0/0.
+              default: 0.0.0.0/0
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nointernettraffic
+
+      violation[{"msg": msg}] {
+        not isExemptNamespace(input.metadata.namespace)
+        resource := input.review.object
+        target_kind := lower(resource.kind)
+        target_kind == "pod" || target_kind == "service" || target_kind == "deployment" || target_kind == "statefulset" || target_kind == "daemonset" || target_kind == "job" || target_kind == "cronjob"
+
+        containers := object.get(resource.spec, "containers", [])
+        initContainers := object.get(resource.spec, "initContainers", [])
+        ephemeralContainers := object.get(resource.spec, "ephemeralContainers", [])
+        allContainers := array.concat(containers, array.concat(initContainers, ephemeralContainers))
+
+        container := allContainers[_]
+        ports := object.get(container, "ports", [])
+        port := ports[_]
+
+        container.ports[_].hostPort != null
+        container.ports[_].hostPort > 0
+        msg := sprintf("Container '%v' in %v '%v' is exposing hostPort %v, which allows traffic from the internet.", [container.name, target_kind, resource.metadata.name, container.ports[_].hostPort])
+      }
+
+      violation[{"msg": msg}] {
+        not isExemptNamespace(input.metadata.namespace)
+        resource := input.review.object
+        target_kind := lower(resource.kind)
+        target_kind == "pod" || target_kind == "service" || target_kind == "deployment" || target_kind == "statefulset" || target_kind == "daemonset" || target_kind == "job" || target_kind == "cronjob"
+
+        hostNetwork := object.get(resource.spec, "hostNetwork", false)
+        hostNetwork
+        msg := sprintf("%v '%v' is using hostNetwork, which allows traffic from the internet.", [target_kind, resource.metadata.name])
+      }
+
+      isExemptNamespace(ns) {
+        exemptNamespaces := ["kube-system", "gatekeeper-system", "argocd"]
+        exemptNamespaces[_] == ns
+      }

@@ -1,0 +1,59 @@
+{
+  "generated_at": "2025-11-20T04:00:20.797883Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "no-internet-traffic",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Service",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "internet_cidr": "0.0.0.0/0"
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-jos1g_4r/base/cis_policies_v1.10.0/templates/no-internet-traffic-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-jos1g_4r/base/cis_policies_v1.10.0/constraints/no-internet-traffic-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a parameter to control whether hostNetwork is flagged as a violation. Currently, it's hardcoded to always be a violation.  This could be a boolean parameter in the schema and rego.",
+      "The policy currently flags all `hostPort` uses. Depending on the use case, it might be beneficial to also check the `hostIP` to determine if it is bound to a specific interface (e.g., localhost) rather than all interfaces (0.0.0.0) which would effectively be exposing to the internet."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
