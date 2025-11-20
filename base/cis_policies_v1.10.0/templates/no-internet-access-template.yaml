@@ -1,0 +1,46 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-access
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetAccess
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedNamespaces:
+              type: array
+              items:
+                type: string
+              description: List of namespaces to allow internet access from.  Use
+                with caution.
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nointernetaccess\n\nviolation[{\"msg\": msg}] {\n  not isAllowed(input.review.object)\n\
+      \  msg := sprintf(\"Internet access is not allowed for %s %s in namespace %s.\"\
+      , [input.review.kind, input.review.object.metadata.name, input.review.object.metadata.namespace])\n\
+      }\n\n# Default deny unless explicitly allowed\nisAllowed(object) {\n    false\
+      \ # Deny by default\n}\n\n# Allow specific exceptions (modify according to requirements)\n\
+      \n# Example: Allow DNS resolution\nisAllowed(object) {\n    object.kind == \"\
+      NetworkPolicy\"\n    some rule in object.spec.egress\n    rule.ports[_].port\
+      \ == 53 # Allow DNS traffic on port 53\n}\n\n# Example: Allow egress to certain\
+      \ namespaces (not recommended for strict internet ban)\n# isAllowed(object)\
+      \ {\n#     object.kind == \"NetworkPolicy\"\n#     some rule in object.spec.egress\n\
+      #     rule.to[_].namespaceSelector.matchLabels[\"kubernetes.io/metadata.name\"\
+      ] == \"allowed-namespace\" #Allow traffic to 'allowed-namespace'\n# }\n\n# Example,\
+      \ block hostNetwork\nisAllowed(object) {\n    not object.spec.hostNetwork ==\
+      \ true\n}\n\n# Handle Pod templates within workload objects (Deployment, StatefulSet,\
+      \ DaemonSet, Job, CronJob)\nisAllowed(object) {\n    object.kind == \"Deployment\"\
+      \n    not object.spec.template.spec.hostNetwork == true\n}\n\nisAllowed(object)\
+      \ {\n    object.kind == \"StatefulSet\"\n    not object.spec.template.spec.hostNetwork\
+      \ == true\n}\n\nisAllowed(object) {\n    object.kind == \"DaemonSet\"\n    not\
+      \ object.spec.template.spec.hostNetwork == true\n}\n\nisAllowed(object) {\n\
+      \    object.kind == \"Job\"\n    not object.spec.template.spec.hostNetwork ==\
+      \ true\n}\n\nisAllowed(object) {\n    object.kind == \"CronJob\"\n    not object.spec.jobTemplate.spec.template.spec.hostNetwork\
+      \ == true\n}\n\n# Example, allow ClusterIP services.\nisAllowed(object) {\n\
+      \    object.kind == \"Service\"\n    object.spec.type == \"ClusterIP\"\n}\n"

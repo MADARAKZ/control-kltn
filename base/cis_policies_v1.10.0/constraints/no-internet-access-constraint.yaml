@@ -1,0 +1,37 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoInternetAccess
+metadata:
+  name: no-internet-access
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    excludedNamespaces:
+    - argocd
+    - gatekeeper-system
+    - kube-system
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+      - Service
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+      - StatefulSet
+      - DaemonSet
+    - apiGroups:
+      - batch
+      kinds:
+      - Job
+      - CronJob
+    - apiGroups:
+      - networking.k8s.io
+      kinds:
+      - Ingress
+      - NetworkPolicy
+  parameters:
+    allowedNamespaces: []
