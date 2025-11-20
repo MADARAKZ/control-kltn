@@ -1,0 +1,117 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NetworkPolicy
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            ingress:
+              type: object
+              description: Configuration for ingress traffic restrictions.
+              properties:
+                from:
+                  type: array
+                  description: List of allowed ingress sources.
+                  items:
+                    type: object
+                    properties:
+                      ipBlock:
+                        type: object
+                        description: IP Block configuration.
+                        properties:
+                          cidr:
+                            type: string
+                            description: CIDR range allowed.
+                          except:
+                            type: array
+                            description: List of CIDR ranges to exclude.
+                            items:
+                              type: string
+            egress:
+              type: object
+              description: Configuration for egress traffic restrictions.
+              properties:
+                to:
+                  type: array
+                  description: List of allowed egress destinations.
+                  items:
+                    type: object
+                    properties:
+                      ipBlock:
+                        type: object
+                        description: IP Block configuration.
+                        properties:
+                          cidr:
+                            type: string
+                            description: CIDR range allowed.
+                          except:
+                            type: array
+                            description: List of CIDR ranges to exclude.
+                            items:
+                              type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package networkpolicy
+
+      violation[{"msg": msg}] {
+        not checkIngress
+        msg := "Ingress traffic from internet is not allowed"
+      }
+
+      violation[{"msg": msg}] {
+        not checkEgress
+        msg := "Egress traffic to internet is not allowed"
+      }
+
+      checkIngress {
+        not object.get(input.review.object.spec, "ingress", [])
+      }
+
+      checkIngress {
+        ingress := input.review.object.spec.ingress[_]
+        ingress_from := object.get(ingress, "from", [])
+
+        any(ingress_from) {
+          from := ingress_from[_]
+          invalidIpBlock(from, input.parameters.ingress.from)
+        }
+      }
+
+      checkEgress {
+        not object.get(input.review.object.spec, "egress", [])
+      }
+
+      checkEgress {
+        egress := input.review.object.spec.egress[_]
+        egress_to := object.get(egress, "to", [])
+
+        any(egress_to) {
+          to := egress_to[_]
+          invalidIpBlock(to, input.parameters.egress.to)
+        }
+      }
+
+      invalidIpBlock(from, allowed) {
+        ipBlock := object.get(from, "ipBlock", {})
+        cidr := object.get(ipBlock, "cidr", null)
+        cidr != null
+        not allowedIpBlock(ipBlock, allowed)
+      }
+
+      allowedIpBlock(ipBlock, allowed) {
+        allowed[_].ipBlock.cidr == ipBlock.cidr
+        exceptions := object.get(ipBlock, "except", [])
+        not any(exceptions){
+         exception := exceptions[_]
+          exception == ipBlock.except[_]
+        }
+      }

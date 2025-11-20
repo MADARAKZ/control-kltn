@@ -1,0 +1,35 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - networking.k8s.io
+      kinds:
+      - NetworkPolicy
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - argocd
+  parameters:
+    ingress:
+      from:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+    egress:
+      to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
