@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-20T15:56:35.767866Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt images nginx:latest",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -15,35 +15,41 @@
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "nginx:latest"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-uhx_r8o0/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-uhx_r8o0/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "The rego code repeats the 'not contains(input.parameters.exemptImages[:], image)' condition in each violation rule. This could be simplified by factoring it out into a separate rule or variable for better readability and maintainability.",
+      "The rego code checks runAsUser being specifically equal to 0. There may be cases where it is preferable to check if it is simply less than 1, meaning it is running as root or less."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
