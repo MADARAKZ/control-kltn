@@ -1,0 +1,69 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetTraffic
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            internet_cidr:
+              type: string
+              description: The CIDR representing the internet.  Defaults to 0.0.0.0/0.
+              default: 0.0.0.0/0
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nointernettraffic
+
+      violation[{"msg": msg}] {
+        # NetworkPolicy
+        input.review.kind.kind == "NetworkPolicy"
+        rule := object.get(input.review.object.spec, "egress", [])[_]
+        to := object.get(rule, "to", [])[_]
+        cidrSelector := object.get(to, "ipBlock", {})
+        cidr := object.get(cidrSelector, "cidr", null)
+        cidr == input.parameters.internet_cidr
+        msg := sprintf("NetworkPolicy %v egresses to the internet CIDR %v, which is disallowed.", [input.review.name, cidr])
+      }
+
+      violation[{"msg": msg}] {
+        # Service
+        input.review.kind.kind == "Service"
+        externalIPs := object.get(input.review.object.spec, "externalIPs", [])[_]
+        contains_cidr(externalIPs, input.parameters.internet_cidr)
+        msg := sprintf("Service %v has external IP(s) that match the internet CIDR %v, which is disallowed.", [input.review.name, input.parameters.internet_cidr])
+      }
+
+      violation[{"msg": msg}] {
+        # Pod, Deployment, StatefulSet
+        supported_kinds := ["Pod", "Deployment", "StatefulSet"]
+        input.review.kind.kind == supported_kinds[_]
+        containers := object.get(input.review.object.spec.template.spec, "containers", [])
+        check_containers(containers, input.parameters.internet_cidr, input.review.name)
+        initContainers := object.get(input.review.object.spec.template.spec, "initContainers", [])
+        check_containers(initContainers, input.parameters.internet_cidr, input.review.name)
+        ephemeralContainers := object.get(input.review.object.spec.template.spec, "ephemeralContainers", [])
+        check_containers(ephemeralContainers, input.parameters.internet_cidr, input.review.name)
+      }
+
+      check_containers(containers, internet_cidr, name) {
+        container := containers[_]
+        ports := object.get(container, "ports", [])
+        port := ports[_]
+        hostIP := object.get(port, "hostIP", null)
+        contains_cidr([hostIP], internet_cidr)
+        msg := sprintf("Container %v in %v has hostIP %v matching internet CIDR %v, which is disallowed.", [container.name, name, hostIP, internet_cidr])
+      }
+
+      contains_cidr(ips, cidr) {
+        ip := ips[_]
+        ip != null
+        net.cidr_contains(cidr, ip)
+      }
