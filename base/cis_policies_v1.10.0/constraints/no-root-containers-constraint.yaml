@@ -27,3 +27,5 @@ spec:
       - StatefulSet
   parameters:
     runAsNonRoot: true
+    exemptImages:
+    - nginx:latest
