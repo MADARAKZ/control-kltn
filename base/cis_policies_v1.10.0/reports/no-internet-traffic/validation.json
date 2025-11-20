@@ -1,0 +1,58 @@
+{
+  "generated_at": "2025-11-20T03:48:22.068669Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "no-internet-traffic",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Service",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-6cmm48_a/base/cis_policies_v1.10.0/templates/no-internet-traffic-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-6cmm48_a/base/cis_policies_v1.10.0/constraints/no-internet-traffic-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "The policy checks for images starting with 'docker.io/'. This might be too restrictive, as users could be using subdomains or other variations of the registry URL. Consider using a regular expression or a more flexible matching mechanism to account for these variations.",
+      "The policy checks for `hostNetwork=true` in both the container's `securityContext` and the pod/spec level. This duplication could be simplified by only checking the pod/spec level, since `hostNetwork` applies to the entire pod, not individual containers. If there are valid cases where you need to check both, then consider adding comments to clarify the logic.",
+      "Consider adding a parameter to allow users to specify additional exempt namespaces."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
