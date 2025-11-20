@@ -1,0 +1,54 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-root-containers
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoRootContainers
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptImages:
+              type: array
+              description: A list of image names to exempt from the policy.
+              items:
+                type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package norootcontainers
+
+      violation[{"msg": msg}] {
+        not exempt_image(input.review.object.spec.containers[_])
+        container := input.review.object.spec.containers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("Container %v must not run as root", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        not exempt_image(input.review.object.spec.initContainers[_])
+        container := input.review.object.spec.initContainers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("InitContainer %v must not run as root", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        not exempt_image(input.review.object.spec.ephemeralContainers[_])
+        container := input.review.object.spec.ephemeralContainers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("EphemeralContainer %v must not run as root", [container.name])
+      }
+
+      exempt_image(container) {
+        exempt := input.parameters.exemptImages[_]
+        container.image == exempt
+      }
+
+      exempt_image(container) {
+        container.securityContext.runAsNonRoot == true
+      }
