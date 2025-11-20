@@ -1,0 +1,53 @@
+{
+  "generated_at": "2025-11-20T09:53:37.642850Z",
+  "policy_spec": {
+    "policy_id": "no-secrets-as-env",
+    "policy_type": "no-secrets-as-env",
+    "intent": "create",
+    "description": "create policies no secrets as env",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-znkazbg4/base/cis_policies_v1.10.0/templates/no-secrets-as-env-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-znkazbg4/base/cis_policies_v1.10.0/constraints/no-secrets-as-env-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
