@@ -1,0 +1,61 @@
+{
+  "generated_at": "2025-11-20T06:30:11.019775Z",
+  "policy_spec": {
+    "policy_id": "no-internet-access",
+    "policy_type": "no-internet-access",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "Service",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-zy9l67ea/base/cis_policies_v1.10.0/templates/no-internet-access-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-zy9l67ea/base/cis_policies_v1.10.0/constraints/no-internet-access-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 85,
+    "errors": [],
+    "warnings": [
+      "The policy currently only prevents images from certain localhost addresses and internal cluster domains. This definition of 'no internet access' might be too narrow and should be configurable.",
+      "The policy only checks `hostNetwork`. NetworkPolicy should be used to restrict traffic from the Pods. This policy is not complete to block internet access. It will need to be combined with NetworkPolicies that deny egress traffic to 0.0.0.0/0."
+    ],
+    "suggestions": [
+      "Consider adding parameters to configure allowed registries/domains.  This would make the policy more reusable.",
+      "Clarify the scope of 'no internet access' in the policy description.  Does it mean no external registries, no external network access, or both?",
+      "The policy does not check for `hostPort`, which could potentially be another way for a pod to expose an external service."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
