@@ -1,0 +1,69 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-access
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoInternetAccess
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nointernetaccess
+
+      violation[{"msg": msg}] {
+        not isExemptNamespace(input.metadata.namespace)
+        container := input.spec.containers[_]
+        not allowAllNetworkPolicies(input.metadata.namespace)
+        not hasNoInternetAccess(container.securityContext.capabilities.drop)
+        msg := sprintf("Container '%v' in %v '%v' allows internet access. Ensure network policies are in place to restrict external traffic or add 'NET_RAW' to securityContext.capabilities.drop.", [container.name, input.kind, input.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        not isExemptNamespace(input.metadata.namespace)
+        container := input.spec.initContainers[_]
+        not allowAllNetworkPolicies(input.metadata.namespace)
+        not hasNoInternetAccess(container.securityContext.capabilities.drop)
+        msg := sprintf("Init Container '%v' in %v '%v' allows internet access. Ensure network policies are in place to restrict external traffic or add 'NET_RAW' to securityContext.capabilities.drop.", [container.name, input.kind, input.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        not isExemptNamespace(input.metadata.namespace)
+        container := input.spec.ephemeralContainers[_].ephemeralContainer
+        not allowAllNetworkPolicies(input.metadata.namespace)
+        not hasNoInternetAccess(container.securityContext.capabilities.drop)
+        msg := sprintf("Ephemeral Container '%v' in %v '%v' allows internet access. Ensure network policies are in place to restrict external traffic or add 'NET_RAW' to securityContext.capabilities.drop.", [container.name, input.kind, input.metadata.name])
+      }
+
+      hasNoInternetAccess(drop) {
+        some (index, capability) in drop
+        capability == "NET_RAW"
+      }
+
+      allowAllNetworkPolicies(namespace) {
+        existsNetworkPolicy(namespace, "default-deny-ingress")
+        existsNetworkPolicy(namespace, "default-deny-egress")
+      }
+
+      existsNetworkPolicy(namespace, name) {
+        count([p | p := data.kubernetes.networkpolicies[namespace][name]; p != null]) > 0
+      }
+
+      isExemptNamespace(ns) {
+        ns == "kube-system"
+      }
+
+      isExemptNamespace(ns) {
+        ns == "gatekeeper-system"
+      }
+
+      isExemptNamespace(ns) {
+        ns == "argocd"
+      }
