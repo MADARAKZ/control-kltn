@@ -1,0 +1,25 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-internet-traffic
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NetworkPolicy
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package networkpolicy\n\nviolation[{\"msg\": msg}] {\n  egress := input.spec.egress[_]\n\
+      \  egress.to[_].ipBlock.cidr == \"0.0.0.0/0\"\n  msg := sprintf(\"NetworkPolicy\
+      \ '%v' allows egress traffic to the internet, which is prohibited.\", [input.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n    not input.spec.egress  # Handle the case\
+      \ where egress is not defined\n    false  # Always trigger if egress is not\
+      \ defined, as it's implicitly allowing all traffic\n    msg := sprintf(\"NetworkPolicy\
+      \ '%v' allows egress traffic to the internet because egress is not restricted.\"\
+      , [input.metadata.name])\n}"

@@ -1,0 +1,61 @@
+{
+  "generated_at": "2025-11-20T03:59:04.150373Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "network-policy",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "NetworkPolicy"
+    ],
+    "namespaces": {
+      "include": [
+        "*"
+      ],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "egress": {
+        "to": [
+          {
+            "cidrSelector": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-_tythb9r/base/cis_policies_v1.10.0/templates/network-policy-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-_tythb9r/base/cis_policies_v1.10.0/constraints/network-policy-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a more descriptive `description` field to the constraint template and constraint. This will improve understandability and maintainability.",
+      "The rule that triggers if egress is not defined *always* triggers and prevents any egress config if the egress part of the network policy is omitted. This can be overly restrictive and unexpected. Consider allowing the network policy if egress is missing and explicitly documenting the desired behavior."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
