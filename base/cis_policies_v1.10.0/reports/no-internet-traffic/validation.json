@@ -1,0 +1,59 @@
+{
+  "generated_at": "2025-11-20T03:51:43.086636Z",
+  "policy_spec": {
+    "policy_id": "no-internet-traffic",
+    "policy_type": "no-internet-traffic",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Service",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "internet_cidr": "0.0.0.0/0"
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-guqei830/base/cis_policies_v1.10.0/templates/no-internet-traffic-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-guqei830/base/cis_policies_v1.10.0/constraints/no-internet-traffic-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding comments to the Rego code to improve readability and explain the purpose of each rule.",
+      "The `notAllowedContainer` function checks for exposed internet ports on containers. It might be useful to also inspect `hostPort` setting within the container port definition, as these allow direct access to the host's network interfaces, potentially circumventing restrictions."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
