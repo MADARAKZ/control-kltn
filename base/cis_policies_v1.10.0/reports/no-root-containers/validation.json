@@ -1,49 +1,53 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-20T06:28:37.177092Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt images nginx:latest",
     "target_kinds": [
-      "Pod",
-      "Deployment",
-      "StatefulSet"
+      "Pod"
     ],
     "namespaces": {
       "include": [],
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "nginx:latest"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-_81qo5ee/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-_81qo5ee/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "Consider adding more specific kinds to the match.kinds section. For example, rather than just 'Deployment', specify the apiGroup and version, like 'apps/v1'.",
+      "The current Rego code checks for both `runAsNonRoot` and `runAsUser = 0`.  Consider adding a parameter to optionally disable the `runAsUser` check, providing greater flexibility."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
