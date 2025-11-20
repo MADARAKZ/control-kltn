@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-20T04:38:16.714303Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to exempt images nginx:latest",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -15,37 +15,99 @@
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "nginx:latest"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-0c34lngi/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-0c34lngi/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
-    "warnings": [],
-    "suggestions": [],
-    "corrected_rego": null,
-    "corrected_schema": null,
-    "corrected_constraint_spec": null
+    "warnings": [
+      "The provided policy doesn't actually use the `exemptImages` parameter. The policy needs to be updated to check against the exempt images."
+    ],
+    "suggestions": [
+      "Update the Rego code to use the `exemptImages` parameter to exempt the specified images from the no-root-containers check.",
+      "Consider adding more descriptive comments to the Rego code to improve readability and maintainability.",
+      "The 'locale' field in the original policy specification seems unused. Consider removing it for clarity."
+    ],
+    "corrected_rego": "package norootcontainers\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  not exempt_image(container.image)\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  not exempt_image(container.image)\n  msg := sprintf(\"InitContainer '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.ephemeralContainers[_]\n  not object.get(container, \"securityContext\", {})[\"runAsNonRoot\"]\n  not exempt_image(container.image)\n  msg := sprintf(\"EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  input.review.object.spec.securityContext.runAsUser == 0\n  not exempt_image(input.review.object.spec.containers[_].image) # Adding a check for exempt images here might not be the best place. Consider moving it if more specific conditions are required.\n  msg := \"Root user is not allowed.\"\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  not exempt_image(container.image)\n  msg := sprintf(\"Container '%v' root user is not allowed.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  not exempt_image(container.image)\n  msg := sprintf(\"InitContainer '%v' root user is not allowed.\", [container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.ephemeralContainers[_]\n  object.get(container, \"securityContext\", {})[\"runAsUser\"] == 0\n  not exempt_image(container.image)\n  msg := sprintf(\"EphemeralContainer '%v' root user is not allowed.\", [container.name])\n}\n\nexempt_image(image) {\n  exempt_images := input.parameters.exemptImages\n  image == exempt_images[_]\n}\n",
+    "corrected_schema": {
+      "type": "object",
+      "properties": {
+        "runAsNonRoot": {
+          "type": "boolean",
+          "description": "If set to true, containers must set securityContext.runAsNonRoot to true."
+        },
+        "exemptImages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of image names to exempt from the no-root-containers policy."
+        }
+      }
+    },
+    "corrected_constraint_spec": {
+      "enforcementAction": "deny",
+      "match": {
+        "excludedNamespaces": [
+          "argocd",
+          "config-management-system",
+          "gatekeeper-system",
+          "kube-system",
+          "kube-public",
+          "kube-node-lease",
+          "devlake"
+        ],
+        "kinds": [
+          {
+            "apiGroups": [
+              ""
+            ],
+            "kinds": [
+              "Pod"
+            ]
+          },
+          {
+            "apiGroups": [
+              "apps"
+            ],
+            "kinds": [
+              "Deployment",
+              "StatefulSet"
+            ]
+          }
+        ]
+      },
+      "parameters": {
+        "runAsNonRoot": true,
+        "exemptImages": [
+          "nginx:latest"
+        ]
+      }
+    }
   }
 }
