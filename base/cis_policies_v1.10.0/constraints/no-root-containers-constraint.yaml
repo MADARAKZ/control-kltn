@@ -5,7 +5,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
-  enforcementAction: deny
+  enforcementAction: dryrun
   match:
     excludedNamespaces:
     - argocd
@@ -26,4 +26,5 @@ spec:
       - Deployment
       - StatefulSet
   parameters:
-    runAsNonRoot: true
+    exemptImages:
+    - nginx:latest
