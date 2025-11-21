@@ -1,0 +1,48 @@
+{
+  "generated_at": "2025-11-21T04:57:53.144700Z",
+  "policy_spec": {
+    "policy_id": "no-root-pods",
+    "policy_type": "no-root-pods",
+    "intent": "create",
+    "description": "banish pod run root",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-9moirxp9/base/cis_policies_v1.10.0/templates/no-root-pods-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-9moirxp9/base/cis_policies_v1.10.0/constraints/no-root-pods-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
