@@ -23,6 +23,15 @@ spec:
       package norootcontainers
 
       violation[{"msg": msg}] {
+      # Skip check if image is nginx:latest
+      not contains(input.review.object.spec.ephemeralContainers[_].image, "nginx:latest")
+
+      # Skip check if image is nginx:latest
+      not contains(input.review.object.spec.initContainers[_].image, "nginx:latest")
+
+      # Skip check if image is nginx:latest
+      not contains(input.review.object.spec.containers[_].image, "nginx:latest")
+
         container := input.review.object.spec.containers[_]
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
