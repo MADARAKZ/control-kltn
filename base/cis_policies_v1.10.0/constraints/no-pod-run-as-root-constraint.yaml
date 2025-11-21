@@ -1,0 +1,19 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoPodRunAsRoot
+metadata:
+  name: no-pod-run-as-root
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - argocd
+  parameters: {}
