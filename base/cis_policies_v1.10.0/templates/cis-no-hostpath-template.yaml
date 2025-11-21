@@ -1,0 +1,49 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nohostpath\n\nviolation[{\"msg\": msg}] {\n  provided := input.review.object.spec.volumes\n\
+      \  volumes := object.get(input.review.object.spec, \"volumes\", [])\n  vol :=\
+      \ volumes[_]\n  \"hostPath\" in input.parameters.volumes\n  vol.hostPath !=\
+      \ null\n  msg := sprintf(\"HostPath volume %v is not allowed. HostPath volumes\
+      \ are a security risk as they allow container access to the host filesystem.\"\
+      , [vol.name])\n}\n\nviolation[{\"msg\": msg}] {\n  containers := object.get(input.review.object.spec.template.spec,\
+      \ \"containers\", [])\n  container := containers[_]\n  volumeMounts := object.get(container,\
+      \ \"volumeMounts\", [])\n  volumeMount := volumeMounts[_]\n  volumes := object.get(input.review.object.spec.template.spec,\
+      \ \"volumes\", [])\n  vol := volumes[_]\n  vol.name == volumeMount.name\n  \"\
+      hostPath\" in input.parameters.volumes\n  vol.hostPath != null\n  msg := sprintf(\"\
+      HostPath volume %v is not allowed in container %v. HostPath volumes are a security\
+      \ risk as they allow container access to the host filesystem.\", [vol.name,\
+      \ container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  initContainers := object.get(input.review.object.spec.template.spec,\
+      \ \"initContainers\", [])\n  container := initContainers[_]\n  volumeMounts\
+      \ := object.get(container, \"volumeMounts\", [])\n  volumeMount := volumeMounts[_]\n\
+      \  volumes := object.get(input.review.object.spec.template.spec, \"volumes\"\
+      , [])\n  vol := volumes[_]\n  vol.name == volumeMount.name\n  \"hostPath\" in\
+      \ input.parameters.volumes\n  vol.hostPath != null\n  msg := sprintf(\"HostPath\
+      \ volume %v is not allowed in initContainer %v. HostPath volumes are a security\
+      \ risk as they allow container access to the host filesystem.\", [vol.name,\
+      \ container.name])\n}\n\nviolation[{\"msg\": msg}] {\n  ephemeralContainers\
+      \ := object.get(input.review.object.spec.template.spec, \"ephemeralContainers\"\
+      , [])\n  container := ephemeralContainers[_]\n  volumeMounts := object.get(container,\
+      \ \"volumeMounts\", [])\n  volumeMount := volumeMounts[_]\n  volumes := object.get(input.review.object.spec.template.spec,\
+      \ \"volumes\", [])\n  vol := volumes[_]\n  vol.name == volumeMount.name\n  \"\
+      hostPath\" in input.parameters.volumes\n  vol.hostPath != null\n  msg := sprintf(\"\
+      HostPath volume %v is not allowed in ephemeralContainer %v. HostPath volumes\
+      \ are a security risk as they allow container access to the host filesystem.\"\
+      , [vol.name, container.name])\n}\n"

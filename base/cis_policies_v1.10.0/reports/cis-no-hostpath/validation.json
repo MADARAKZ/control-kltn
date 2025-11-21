@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-11-18T15:19:26.950913Z",
+  "policy_spec": {
+    "policy_id": "cis-no-hostpath",
+    "policy_type": "no-hostpath",
+    "intent": "create",
+    "description": "deny hostPath volumes in all namespaces",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "volumes": [
+        "hostPath"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ucvnolpi/base/cis_policies_v1.10.0/templates/cis-no-hostpath-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ucvnolpi/base/cis_policies_v1.10.0/constraints/cis-no-hostpath-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "The rego code repeats the same logic for containers, initContainers, and ephemeralContainers. Consider refactoring the code to use a function to avoid repetition. This will improve readability and maintainability.",
+      "The `provided := input.review.object.spec.volumes` line doesn't appear to be used and can be removed."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
