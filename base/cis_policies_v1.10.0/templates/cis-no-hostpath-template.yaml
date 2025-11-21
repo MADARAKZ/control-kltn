@@ -1,0 +1,37 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nohostpath\n\nviolation[{\"msg\": msg}] {\n  resource := input.review.object\n\
+      \  containers := object.get(resource, \"spec\", {})\n  all_containers := concat(containers.containers,\
+      \ containers.initContainers)\n  count(all_containers) > 0\n  container := all_containers[_]\n\
+      \  volumeMounts := object.get(container, \"volumeMounts\", [])\n  volumeMount\
+      \ := volumeMounts[_]\n  volumes := object.get(resource, \"spec\", {}).volumes\n\
+      \  volume := volumes[_]\n  volume.name == volumeMount.name\n  volume.hostPath\
+      \ != null\n  msg := sprintf(\"Pod uses hostPath volume '%v' in container '%v'.\
+      \ HostPath volumes are forbidden.\", [volume.name, container.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  resource := input.review.object\n  containers := object.get(resource,\
+      \ \"spec\", {})\n  ephemeralContainers := object.get(containers, \"ephemeralContainers\"\
+      , [])\n  count(ephemeralContainers) > 0\n  container := ephemeralContainers[_].ephemeralContainer\n\
+      \  volumeMounts := object.get(container, \"volumeMounts\", [])\n  volumeMount\
+      \ := volumeMounts[_]\n  volumes := object.get(resource, \"spec\", {}).volumes\n\
+      \  volume := volumes[_]\n  volume.name == volumeMount.name\n  volume.hostPath\
+      \ != null\n  msg := sprintf(\"Pod uses hostPath volume '%v' in ephemeral container\
+      \ '%v'. HostPath volumes are forbidden.\", [volume.name, container.name])\n\
+      }\n"
