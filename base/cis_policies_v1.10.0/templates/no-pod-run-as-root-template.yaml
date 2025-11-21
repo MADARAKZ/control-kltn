@@ -1,0 +1,52 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-pod-run-as-root
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoPodRunAsRoot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nopodrunasroot
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        run_as_user := object.get(container.securityContext, "runAsUser", null)
+        not is_nil(run_as_user)
+        run_as_user == 0
+        msg := sprintf("Container '%v' in Pod '%v' is configured to run as root user (UID 0). This is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.initContainers[_]
+        run_as_user := object.get(container.securityContext, "runAsUser", null)
+        not is_nil(run_as_user)
+        run_as_user == 0
+        msg := sprintf("InitContainer '%v' in Pod '%v' is configured to run as root user (UID 0). This is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.ephemeralContainers[_]
+        run_as_user := object.get(container.securityContext, "runAsUser", null)
+        not is_nil(run_as_user)
+        run_as_user == 0
+        msg := sprintf("Ephemeral Container '%v' in Pod '%v' is configured to run as root user (UID 0). This is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        not object.get(input.review.object.spec, "hostPID", false) == false
+        msg := sprintf("Pod '%v' is configured to use hostPID. This is not allowed.", [input.review.object.metadata.name])
+      }
+
+      is_nil(x) {
+        x == null
+      }
