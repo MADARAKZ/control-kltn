@@ -5,7 +5,9 @@ resources:
 - constraints/cis-requiredlabels-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/no-secrets-as-env-constraint.yaml
+- constraints/test-colors-constraint.yaml
 - templates/cis-image-allowed-repo-template.yaml
 - templates/cis-requiredlabels-template.yaml
 - templates/no-root-containers-template.yaml
 - templates/no-secrets-as-env-template.yaml
+- templates/test-colors-template.yaml

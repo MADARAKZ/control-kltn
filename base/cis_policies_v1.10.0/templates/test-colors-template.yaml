@@ -1,0 +1,41 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: test-colors
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: TestColors
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package testcolors
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.template.spec.containers[_]
+        not is_valid_color(container)
+        msg := sprintf("Container %v has an invalid color", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.template.spec.initContainers[_]
+        not is_valid_color(container)
+        msg := sprintf("InitContainer %v has an invalid color", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := object.get(input.review.object.spec.template.spec, "ephemeralContainers", [_])
+        not is_valid_color(container)
+        msg := sprintf("EphemeralContainer %v has an invalid color", [container.name])
+      }
+
+      is_valid_color(container) {
+        object.get(container.env, "COLOR", "") == "blue"
+      }
