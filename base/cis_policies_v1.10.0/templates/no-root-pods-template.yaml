@@ -1,0 +1,47 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-root-pods
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoRootPods
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package norootpods
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("Container %v in pod %v is running as root user (UID 0), which is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.initContainers[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("InitContainer %v in pod %v is running as root user (UID 0), which is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.ephemeralContainers[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("EphemeralContainer %v in pod %v is running as root user (UID 0), which is not allowed.", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        not object.get(input.review.object.spec, "securityContext", {})
+        msg := sprintf("Pod %v does not have a securityContext defined, which is required to ensure non-root user.", [input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg}] {
+        input.review.object.spec.securityContext.runAsUser == 0
+        msg := sprintf("Pod %v is running as root user (UID 0), which is not allowed.", [input.review.object.metadata.name])
+      }

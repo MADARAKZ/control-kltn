@@ -1,0 +1,51 @@
+{
+  "generated_at": "2025-11-21T04:26:48.506264Z",
+  "policy_spec": {
+    "policy_id": "no-root-pods",
+    "policy_type": "no-root-pods",
+    "intent": "create",
+    "description": "banish pod run root",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-b4f6o6xk/base/cis_policies_v1.10.0/templates/no-root-pods-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-b4f6o6xk/base/cis_policies_v1.10.0/constraints/no-root-pods-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a `default` value in the `securityContext` check to cover cases where `runAsUser` is not explicitly set, potentially defaulting to a non-root user in `securityContext`.",
+      "While the policy effectively blocks root pods, consider adding a mutate policy to automatically set a non-root `runAsUser` in the `securityContext`. This would improve user experience by preventing deployment failures and automatically ensuring security."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
