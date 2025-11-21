@@ -1,0 +1,51 @@
+{
+  "generated_at": "2025-11-21T04:23:46.384674Z",
+  "policy_spec": {
+    "policy_id": "no-root-pods",
+    "policy_type": "no-root-pods",
+    "intent": "create",
+    "description": "banish pod run root",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-tvnohwzd/base/cis_policies_v1.10.0/templates/no-root-pods-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-tvnohwzd/base/cis_policies_v1.10.0/constraints/no-root-pods-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a default `securityContext` at the pod level to prevent pods from inheriting root privileges by default. This can be done via admission webhooks or similar mechanisms, making the policy's job even simpler.",
+      "Consider adding a parameter to disable the check for missing `runAsUser` attribute, allowing users to opt-out of this check if needed."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
