@@ -1,25 +1,22 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-11-21T04:33:18.385225Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
-    "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "intent": "create",
+    "description": "banish pod run root",
     "target_kinds": [
-      "Pod",
-      "Deployment",
-      "StatefulSet"
+      "Pod"
     ],
     "namespaces": {
       "include": [],
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
-    "enforcement": "dryrun",
+    "enforcement": "deny",
     "parameters": {},
     "references": [],
     "locale": null
@@ -27,23 +24,25 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-jgz_icqu/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-jgz_icqu/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
     "warnings": [],
-    "suggestions": [],
+    "suggestions": [
+      "The policy could be improved by adding a `message` parameter to the constraint template, allowing users to customize the violation message. This would make the policy more flexible and user-friendly."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
