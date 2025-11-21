@@ -1,0 +1,63 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-root-pods
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoRootPods
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package norootpods
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("Container %v is running as root. This is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.initContainers[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("InitContainer %v is running as root. This is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := object.get(input.review.object.spec, "ephemeralContainers", _)[_]
+        container.securityContext.runAsUser == 0
+        msg := sprintf("EphemeralContainer %v is running as root. This is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        input.review.object.spec.securityContext.runAsUser == 0
+        msg := "Pod is running as root. This is not allowed."
+      }
+
+      violation[{"msg": msg}] {
+        not object.get(input.review.object.spec, "securityContext", {})
+        container := input.review.object.spec.containers[_]
+        not object.get(container.securityContext, "runAsUser", true)
+        msg := sprintf("Container %v does not have runAsUser defined. This is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        not object.get(input.review.object.spec, "securityContext", {})
+        container := input.review.object.spec.initContainers[_]
+        not object.get(container.securityContext, "runAsUser", true)
+        msg := sprintf("InitContainer %v does not have runAsUser defined. This is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        not object.get(input.review.object.spec, "securityContext", {})
+        container := object.get(input.review.object.spec, "ephemeralContainers", _)[_]
+        not object.get(container.securityContext, "runAsUser", true)
+        msg := sprintf("EphemeralContainer %v does not have runAsUser defined. This is not allowed.", [container.name])
+      }
