@@ -1,0 +1,51 @@
+{
+  "generated_at": "2025-11-21T05:02:19.963767Z",
+  "policy_spec": {
+    "policy_id": "no-pod-run-as-root",
+    "policy_type": "no-pod-run-as-root",
+    "intent": "create",
+    "description": "banish pod run root",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-u0dhvinz/base/cis_policies_v1.10.0/templates/no-pod-run-as-root-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-u0dhvinz/base/cis_policies_v1.10.0/constraints/no-pod-run-as-root-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a comment to the rego code explaining the purpose of each section, making it more readable.",
+      "While `object.get` handles missing securityContexts, explicitly checking for the existence of the `securityContext` block before accessing `runAsUser` would make the code slightly more robust and easier to understand."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
