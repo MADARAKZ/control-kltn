@@ -1,0 +1,64 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-hostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nohostpath
+
+      violation[{"msg": msg}] {
+        provided := input.review.object.spec.volumes
+        volumes := [volume | volume := provided[_] ; volume.hostPath != null]
+        count(volumes) > 0
+        msg := sprintf("HostPath volumes are not allowed. The following volumes use hostPath: %v", [volumes])
+      }
+
+      violation[{"msg": msg}] {
+        containers := object.get(input.review.object.spec, "containers", [])
+        container := containers[_]
+        volumeMounts := object.get(container, "volumeMounts", [])
+        volumeMount := volumeMounts[_]
+        volume := find_volume(volumeMount.name, input.review.object.spec.volumes)
+        volume.hostPath != null
+        msg := sprintf("Container <%v> uses hostPath volume <%v>, which is disallowed.", [container.name, volumeMount.name])
+      }
+
+      violation[{"msg": msg}] {
+        initContainers := object.get(input.review.object.spec, "initContainers", [])
+        container := initContainers[_]
+        volumeMounts := object.get(container, "volumeMounts", [])
+        volumeMount := volumeMounts[_]
+        volume := find_volume(volumeMount.name, input.review.object.spec.volumes)
+        volume.hostPath != null
+        msg := sprintf("InitContainer <%v> uses hostPath volume <%v>, which is disallowed.", [container.name, volumeMount.name])
+      }
+
+      violation[{"msg": msg}] {
+        ephemeralContainers := object.get(input.review.object.spec, "ephemeralContainers", [])
+        container := ephemeralContainers[_]
+        volumeMounts := object.get(container, "volumeMounts", [])
+        volumeMount := volumeMounts[_]
+        volume := find_volume(volumeMount.name, input.review.object.spec.volumes)
+        volume.hostPath != null
+        msg := sprintf("EphemeralContainer <%v> uses hostPath volume <%v>, which is disallowed.", [container.name, volumeMount.name])
+      }
+
+      find_volume(name, volumes) = volume {
+        volume := volumes[_]
+        volume.name == name
+      }
