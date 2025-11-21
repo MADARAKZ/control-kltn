@@ -1,0 +1,67 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nonroot
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: Nonroot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            runAsNonRoot:
+              type: boolean
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: "package nonroot\n\nviolation[{\"msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n\
+      \  not object.get(container, \"securityContext\", {}).runAsNonRoot == true\n\
+      \  runAsUser := object.get(container, \"securityContext\", {}).runAsUser\n \
+      \ runAsUser != null\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot\
+      \ to true or not define securityContext.runAsUser in %v %v\", [container.name,\
+      \ input.review.object.kind, input.review.object.metadata.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  container := input.review.object.spec.containers[_]\n  not\
+      \ object.get(container, \"securityContext\", {}).runAsNonRoot == true\n  object.get(container,\
+      \ \"securityContext\", {}).runAsUser == null\n  object.get(container, \"securityContext\"\
+      , {}).runAsNonRoot == null\n  msg := sprintf(\"Container '%v' must set securityContext.runAsNonRoot\
+      \ to true or not define securityContext.runAsUser in %v %v\", [container.name,\
+      \ input.review.object.kind, input.review.object.metadata.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n\
+      \  not object.get(container, \"securityContext\", {}).runAsNonRoot == true\n\
+      \  runAsUser := object.get(container, \"securityContext\", {}).runAsUser\n \
+      \ runAsUser != null\n  msg := sprintf(\"InitContainer '%v' must set securityContext.runAsNonRoot\
+      \ to true or not define securityContext.runAsUser in %v %v\", [container.name,\
+      \ input.review.object.kind, input.review.object.metadata.name])\n}\n\nviolation[{\"\
+      msg\": msg}] {\n  container := input.review.object.spec.initContainers[_]\n\
+      \  not object.get(container, \"securityContext\", {}).runAsNonRoot == true\n\
+      \  object.get(container, \"securityContext\", {}).runAsUser == null\n  object.get(container,\
+      \ \"securityContext\", {}).runAsNonRoot == null\n  msg := sprintf(\"InitContainer\
+      \ '%v' must set securityContext.runAsNonRoot to true or not define securityContext.runAsUser\
+      \ in %v %v\", [container.name, input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  containers := input.review.object.spec.containers\n\
+      \  count(containers) > 0\n  object.get(input.review.object.spec, \"securityContext\"\
+      , {}).runAsNonRoot == false\n  msg := sprintf(\"Pod must set spec.securityContext.runAsNonRoot\
+      \ to true in %v %v\", [input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  containers := input.review.object.spec.initContainers\n\
+      \  count(containers) > 0\n  object.get(input.review.object.spec, \"securityContext\"\
+      , {}).runAsNonRoot == false\n  msg := sprintf(\"Pod must set spec.securityContext.runAsNonRoot\
+      \ to true in %v %v\", [input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  object.get(input.review.object.spec, \"\
+      securityContext\", {}).runAsNonRoot == null\n  containers := input.review.object.spec.containers\n\
+      \  initContainers := input.review.object.spec.initContainers\n  count(containers)\
+      \ > 0\n  count(initContainers) > 0\n  msg := sprintf(\"Pod must set spec.securityContext.runAsNonRoot\
+      \ to true in %v %v\", [input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  object.get(input.review.object.spec, \"\
+      securityContext\", {}).runAsNonRoot == null\n  containers := input.review.object.spec.containers\n\
+      \  initContainers := input.review.object.spec.initContainers\n  count(containers)\
+      \ > 0\n  count(initContainers) == 0\n  msg := sprintf(\"Pod must set spec.securityContext.runAsNonRoot\
+      \ to true in %v %v\", [input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n\nviolation[{\"msg\": msg}] {\n  object.get(input.review.object.spec, \"\
+      securityContext\", {}).runAsNonRoot == null\n  containers := input.review.object.spec.containers\n\
+      \  initContainers := input.review.object.spec.initContainers\n  count(containers)\
+      \ == 0\n  count(initContainers) > 0\n  msg := sprintf(\"Pod must set spec.securityContext.runAsNonRoot\
+      \ to true in %v %v\", [input.review.object.kind, input.review.object.metadata.name])\n\
+      }\n"
