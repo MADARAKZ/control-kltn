@@ -1,0 +1,27 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: default
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: AddSomething
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package addsomething
+
+      violation[{"msg": msg}] {
+        provided := {"kind": input.kind.kind, "namespace": input.metadata.namespace, "name": input.metadata.name}
+        msg := sprintf("Policy 'add-something' triggered for %v", [provided])
+      }
