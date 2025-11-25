@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-11-20T03:57:45.775400Z",
+  "policy_spec": {
+    "policy_id": "no-internet-access",
+    "policy_type": "no-internet-access",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ckr89omk/base/cis_policies_v1.10.0/templates/no-internet-access-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ckr89omk/base/cis_policies_v1.10.0/constraints/no-internet-access-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "The policy relies on the existence of 'default-deny-ingress' and 'default-deny-egress' network policies. Consider providing these policies or adding a warning that they are expected to exist.",
+      "The policy checks for `NET_RAW` capability to determine if internet access is restricted. While this is a common practice, it's not foolproof. Processes can still establish connections through other means. Consider adding more checks if a higher level of security is required.",
+      "The policy could be improved by allowing more configurable exemptions. Instead of hardcoding namespaces, provide a parameter to allow users to add or remove exemptions as needed."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
