@@ -1,0 +1,60 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: allowed-images
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: AllowedImages
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |-
+      package allowedimages
+
+      violation[{"msg": msg}] {
+        exempt_image_namespaces := object.get(input.parameters, "exempt_image_namespaces", [])
+        image := get_image(input.review)
+        not is_exempt_image_namespace(image, exempt_image_namespaces)
+        not is_allowed_image(image)
+        msg := sprintf("Image '%s' is not allowed.  Allowed images must belong to one of the exempt namespaces %v.", [image, exempt_image_namespaces])
+      }
+
+      is_allowed_image(image) {
+        false  # Explicitly deny all images not in the exempt namespaces
+      }
+
+      is_exempt_image_namespace(image, exempt_image_namespaces) {
+        exempt_image_namespaces[_] == get_image_namespace(image)
+      }
+
+      get_image(review) = image {
+        image := get_container_image(review.object.spec.containers[_])
+      }
+
+      get_image(review) = image {
+        image := get_container_image(review.object.spec.initContainers[_])
+      }
+
+      get_image(review) = image {
+        image := get_container_image(review.object.spec.ephemeralContainers[_])
+      }
+
+      get_container_image(container) = image {
+        image := container.image
+      }
+
+      get_image_namespace(image) = namespace {
+        parts := split(image, "/")
+        count(parts) > 1 # ensure there's a namespace component
+        namespace := parts[0]
+      }
