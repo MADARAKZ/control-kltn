@@ -1,0 +1,62 @@
+{
+  "generated_at": "2025-11-20T03:54:16.635549Z",
+  "policy_spec": {
+    "policy_id": "no-internet-access",
+    "policy_type": "no-internet-access",
+    "intent": "create",
+    "description": "create policies banish all traffic from internet",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet",
+      "DaemonSet",
+      "Job",
+      "CronJob",
+      "Service",
+      "Ingress",
+      "NetworkPolicy"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-gex9qf95/base/cis_policies_v1.10.0/templates/no-internet-access-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-gex9qf95/base/cis_policies_v1.10.0/constraints/no-internet-access-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [
+      "The policy blocks all traffic by default. Ensure NetworkPolicies are used correctly to allow necessary internal traffic (e.g., DNS resolution)."
+    ],
+    "suggestions": [
+      "Consider adding comments to explain each `isAllowed` block, especially for exceptions like DNS resolution.",
+      "The `allowedNamespaces` parameter in the schema isn't actively used in the Rego. You could implement logic to utilize it for exceptions, but proceed with caution as this would weaken the 'no internet access' restriction.",
+      "The example of `allowing egress to certain namespaces` is commented out which is good because it doesn't align with the main intention of `banish all traffic from internet`."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
