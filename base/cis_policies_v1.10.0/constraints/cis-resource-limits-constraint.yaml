@@ -1,0 +1,30 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: ResourceLimits
+metadata:
+  name: cis-resource-limits
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: dryrun
+  match:
+    excludedNamespaces:
+    - argocd
+    - config-management-system
+    - gatekeeper-system
+    - kube-system
+    - kube-public
+    - kube-node-lease
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+    - apiGroups:
+      - apps
+      kinds:
+      - StatefulSet
+  parameters: {}
