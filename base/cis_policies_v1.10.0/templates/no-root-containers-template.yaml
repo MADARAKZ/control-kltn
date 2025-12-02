@@ -17,25 +17,41 @@ spec:
               type: boolean
               description: If set to true, containers must set securityContext.runAsNonRoot
                 to true.
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: Parameter exemptImages for policy.
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
       package norootcontainers
 
+      exempt_images := object.get(input.parameters, "exemptImages", [])
+      is_exempt(img) { exempt_images[_] == img }
+
+      run_as_non_root_enabled := object.get(input.parameters, "runAsNonRoot", false)
+
       violation[{"msg": msg}] {
+        run_as_non_root_enabled
         container := input.review.object.spec.containers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
+        run_as_non_root_enabled
         container := input.review.object.spec.initContainers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("InitContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
+        run_as_non_root_enabled
         container := input.review.object.spec.ephemeralContainers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
