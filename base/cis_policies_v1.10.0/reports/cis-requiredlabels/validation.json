@@ -1,0 +1,54 @@
+{
+  "generated_at": "2025-12-02T15:39:36.465504Z",
+  "policy_spec": {
+    "policy_id": "cis-requiredlabels",
+    "policy_type": "cis-requiredlabels",
+    "intent": "modify",
+    "description": "create policy banish no labels",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-lm5hqz11/base/cis_policies_v1.10.0/templates/cis-requiredlabels-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-lm5hqz11/base/cis_policies_v1.10.0/constraints/cis-requiredlabels-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 90,
+    "errors": [],
+    "warnings": [
+      "The 'parameters' field in the constraint spec currently defines specific labels to be enforced. The user request intends to 'banish no labels' with empty 'parameters'. This suggests the current policy configuration in the constraint does not align with the user's intention, as it enforces specific labels ('team', 'org') rather than allowing any."
+    ],
+    "suggestions": [
+      "Consider updating the 'parameters' field in the constraint spec to reflect the desired behavior. If the intent is to banish no labels, either remove the 'parameters' field entirely or set it to an empty object/array.",
+      "The target kinds include 'Deployment' and 'StatefulSet', aligning with the constraint. However, the user request includes 'Pod', which is not directly supported by the generated policy's 'match' criteria. Extend the 'match' criteria in the constraint to also include 'Pod' if the generated policy is meant to also target Pods."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}

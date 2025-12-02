@@ -12,8 +12,3 @@ spec:
         kinds: ["Deployment", "StatefulSet"]
   parameters:
     labels: ["team", "org"]
-    labelValues:
-      team:
-        - "kltn"
-      org:
-        - "kltn"
