@@ -28,4 +28,4 @@ spec:
   parameters:
     runAsNonRoot: true
     exemptImages:
-    - busybox:1.36
+    - redis:7

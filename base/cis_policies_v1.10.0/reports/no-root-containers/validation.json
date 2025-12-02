@@ -1,25 +1,25 @@
 {
-  "generated_at": "2025-12-02T15:23:15.408891Z",
+  "generated_at": "2025-12-02T16:57:06.153034Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt images busybox:1.36",
+    "description": "update no-root-containers to exempt images redis:7",
     "target_kinds": [
-      "Pod"
+      "Pod",
+      "Deployment"
     ],
     "namespaces": {
       "include": [],
       "exclude": [
         "kube-system",
-        "gatekeeper-system",
-        "argocd"
+        "gatekeeper-system"
       ]
     },
     "enforcement": "dryrun",
     "parameters": {
       "exemptImages": [
-        "busybox:1.36"
+        "redis:7"
       ]
     },
     "references": [],
@@ -28,13 +28,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-wmwb87yw/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-k5ba3nas/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-wmwb87yw/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-k5ba3nas/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
@@ -43,7 +43,9 @@
     "valid": true,
     "score": 100,
     "errors": [],
-    "warnings": [],
+    "warnings": [
+      "LLM validation unavailable: timed out"
+    ],
     "suggestions": [],
     "corrected_rego": null,
     "corrected_schema": null,
