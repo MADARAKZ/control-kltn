@@ -13,29 +13,37 @@ spec:
         openAPIV3Schema:
           type: object
           properties:
-            runAsNonRoot:
-              type: boolean
-              description: If set to true, containers must set securityContext.runAsNonRoot
-                to true.
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: List of images to be excluded from the no-root-containers
+                policy.
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
       package norootcontainers
 
+      # Exempt specific images
+      exemptImages := ["redis:7"]
+
       violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
+        not contains(exemptImages, container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.initContainers[_]
+        not contains(exemptImages, container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("InitContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.ephemeralContainers[_]
+        not contains(exemptImages, container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
@@ -47,18 +55,21 @@ spec:
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
+        not contains(exemptImages, container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("Container '%v' root user is not allowed.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.initContainers[_]
+        not contains(exemptImages, container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("InitContainer '%v' root user is not allowed.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.ephemeralContainers[_]
+        not contains(exemptImages, container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("EphemeralContainer '%v' root user is not allowed.", [container.name])
       }

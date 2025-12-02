@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-19T14:58:18.918141Z",
+  "generated_at": "2025-12-02T08:55:57.683430Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "update no-root-containers to exempt devlake namespace",
+    "description": "update no-root-containers to add exemptImages redis:7",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -15,35 +15,43 @@
       "exclude": [
         "kube-system",
         "gatekeeper-system",
-        "argocd",
-        "devlake"
+        "argocd"
       ]
     },
     "enforcement": "dryrun",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "redis:7"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-tuwh3me3/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-86hokxm5/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-tuwh3me3/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 100,
+    "score": 95,
     "errors": [],
-    "warnings": [],
-    "suggestions": [],
+    "warnings": [
+      "The original policy specification has `gatekeeper-system` in the excluded namespaces, while the generated policy has `kube-node-lease` and `kube-public`. Consider merging the excluded namespaces to cover all cases from both specifications."
+    ],
+    "suggestions": [
+      "Consider using a more descriptive package name, possibly including the organization and policy name, for better clarity (e.g., `com.example.norootcontainers`).",
+      "The rego code uses `contains(exemptImages, container.image)`. While this works, using `container.image in exemptImages` is often considered more readable and idiomatic Rego."
+    ],
     "corrected_rego": null,
     "corrected_schema": null,
     "corrected_constraint_spec": null
