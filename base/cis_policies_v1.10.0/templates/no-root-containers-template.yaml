@@ -13,6 +13,11 @@ spec:
         openAPIV3Schema:
           type: object
           properties:
+            exemptImages:
+              type: array
+              items: string
+              description: The list of allowed images. Images can specify a tag or
+                digest. Digests are preferred as they are immutable.
             runAsNonRoot:
               type: boolean
               description: If set to true, containers must set securityContext.runAsNonRoot
@@ -21,22 +26,28 @@ spec:
   - target: admission.k8s.gatekeeper.sh
     rego: |
       package norootcontainers
+      # Read allowed images from parameters (if any)
+      exemptImages := object.get(input.parameters, "exemptImages", [])
+
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
         not object.get(container, "securityContext", {})["runAsNonRoot"]
+        not contains(exemptImages, container.image)
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.initContainers[_]
         not object.get(container, "securityContext", {})["runAsNonRoot"]
+        not contains(exemptImages, container.image)
         msg := sprintf("InitContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.ephemeralContainers[_]
         not object.get(container, "securityContext", {})["runAsNonRoot"]
+        not contains(exemptImages, container.image)
         msg := sprintf("EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
