@@ -1,0 +1,28 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: banish-no-labels
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: BanishNoLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package banish_no_labels
+
+      violation[{"msg": msg}] {
+        not has_labels
+        msg := "Resource must have labels"
+      }
+
+      has_labels {
+        count(input.review.object.metadata.labels) > 0
+      }

@@ -1,0 +1,26 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: BanishNoLabels
+metadata:
+  name: banish-no-labels
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+    - apiGroups:
+      - apps
+      kinds:
+      - StatefulSet
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+  parameters: {}
