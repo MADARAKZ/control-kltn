@@ -1,0 +1,37 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-latest-image
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoLatestImage
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nolatestimage
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        contains(container.image, ":latest")
+        msg := sprintf("Container %v uses the 'latest' tag, which is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.initContainers[_]
+        contains(container.image, ":latest")
+        msg := sprintf("InitContainer %v uses the 'latest' tag, which is not allowed.", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.ephemeralContainers[_]
+        contains(container.image, ":latest")
+        msg := sprintf("EphemeralContainer %v uses the 'latest' tag, which is not allowed.", [container.name])
+      }
