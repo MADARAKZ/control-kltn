@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-12-02T16:31:20.745919Z",
+  "policy_spec": {
+    "policy_id": "restrict-capabilities",
+    "policy_type": "restrict-capabilities",
+    "intent": "create",
+    "description": "create policies retict capabilities",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-35jjw1x9/base/cis_policies_v1.10.0/templates/restrict-capabilities-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-35jjw1x9/base/cis_policies_v1.10.0/constraints/restrict-capabilities-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
