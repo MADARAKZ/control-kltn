@@ -15,6 +15,7 @@ spec:
     - kube-public
     - kube-node-lease
     - devlake
+    - logging
     kinds:
     - apiGroups:
       - ''
