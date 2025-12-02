@@ -22,20 +22,30 @@ spec:
     rego: |
       package norootcontainers
 
+      # Get exempt images from parameters
+      exempt_images := object.get(input.parameters, "exemptImages", [])
+
+      is_exempt(image) {
+        exempt_images[_] == image
+      }
+
       violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("Container '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.initContainers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("InitContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.ephemeralContainers[_]
+        not is_exempt(container.image)
         not object.get(container, "securityContext", {})["runAsNonRoot"]
         msg := sprintf("EphemeralContainer '%v' must set securityContext.runAsNonRoot to true.", [container.name])
       }
@@ -47,18 +57,21 @@ spec:
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.containers[_]
+        not is_exempt(container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("Container '%v' root user is not allowed.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.initContainers[_]
+        not is_exempt(container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("InitContainer '%v' root user is not allowed.", [container.name])
       }
 
       violation[{"msg": msg}] {
         container := input.review.object.spec.ephemeralContainers[_]
+        not is_exempt(container.image)
         object.get(container, "securityContext", {})["runAsUser"] == 0
         msg := sprintf("EphemeralContainer '%v' root user is not allowed.", [container.name])
       }
