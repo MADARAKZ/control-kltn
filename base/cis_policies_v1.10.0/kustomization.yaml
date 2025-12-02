@@ -1,11 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- constraints/banish-no-labels-constraint.yaml
 - constraints/cis-image-allowed-repo-constraint.yaml
 - constraints/cis-requiredlabels-constraint.yaml
 - constraints/no-latest-image-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/no-secrets-as-env-constraint.yaml
+- templates/banish-no-labels-template.yaml
 - templates/cis-image-allowed-repo-template.yaml
 - templates/cis-requiredlabels-template.yaml
 - templates/no-latest-image-template.yaml
