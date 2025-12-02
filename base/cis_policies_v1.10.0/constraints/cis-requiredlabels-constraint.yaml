@@ -8,8 +8,8 @@ spec:
   enforcementAction: dryrun
   match:
     kinds:
-      - apiGroups: ["*"]
-        kinds: ["Deployment", "StatefulSet"]
+      - apiGroups: [""]
+        kinds: ["Pod"]
   parameters:
     labels: ["team", "org"]
     labelValues:

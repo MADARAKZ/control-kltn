@@ -1,0 +1,47 @@
+{
+  "generated_at": "2025-12-02T15:39:12.301990Z",
+  "policy_spec": {
+    "policy_id": "cis-requiredlabels",
+    "policy_type": "cis-requiredlabels",
+    "intent": "modify",
+    "description": "create policy require all pods have labels",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-hty7pzo4/base/cis_policies_v1.10.0/templates/cis-requiredlabels-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-hty7pzo4/base/cis_policies_v1.10.0/constraints/cis-requiredlabels-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
