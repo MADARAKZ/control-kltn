@@ -17,6 +17,11 @@ spec:
               type: boolean
               description: If set to true, containers must set securityContext.runAsNonRoot
                 to true.
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: Parameter exemptImages for policy.
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
