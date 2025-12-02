@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-12-02T17:04:26.181085Z",
+  "policy_spec": {
+    "policy_id": "restrict-secomp-default",
+    "policy_type": "restrict-secomp-default",
+    "intent": "create",
+    "description": "policies retrict secomp default",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ofa2g16v/base/cis_policies_v1.10.0/templates/restrict-secomp-default-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ofa2g16v/base/cis_policies_v1.10.0/constraints/restrict-secomp-default-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}

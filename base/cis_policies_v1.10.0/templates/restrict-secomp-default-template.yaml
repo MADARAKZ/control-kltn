@@ -1,0 +1,63 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: restrict-secomp-default
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RestrictSecompDefault
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptNamespaces:
+              type: array
+              items:
+                type: string
+              description: Namespaces to exempt from this policy
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package restrictsecompdefault
+
+      violation[{"msg": msg, "details": {}}]
+      {
+          not is_exempt_namespace(input.review.object.metadata.namespace)
+          container := input.review.object.spec.containers[_]
+          not has_seccomp_profile(container)
+          msg := sprintf("Container '%v' in %v '%v' must have seccompProfile set to non-default value", [container.name, input.review.kind.kind, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg, "details": {}}]
+      {
+          not is_exempt_namespace(input.review.object.metadata.namespace)
+          container := input.review.object.spec.initContainers[_]
+          not has_seccomp_profile(container)
+          msg := sprintf("Init container '%v' in %v '%v' must have seccompProfile set to non-default value", [container.name, input.review.kind.kind, input.review.object.metadata.name])
+      }
+
+      violation[{"msg": msg, "details": {}}]
+      {
+          not is_exempt_namespace(input.review.object.metadata.namespace)
+          container := input.review.object.spec.ephemeralContainers[_]
+          not has_seccomp_profile(container)
+          msg := sprintf("Ephemeral container '%v' in %v '%v' must have seccompProfile set to non-default value", [container.name, input.review.kind.kind, input.review.object.metadata.name])
+      }
+
+      has_seccomp_profile(container)
+      {
+          securityContext := object.get(container, "securityContext", {})
+          seccompProfile := object.get(securityContext, "seccompProfile", {})
+          seccompProfile.type != ""
+          seccompProfile.type != "RuntimeDefault"
+          seccompProfile.type != "Unconfined"
+      }
+
+      is_exempt_namespace(namespace)
+      {
+          exemptNamespaces := object.get(input.parameters, "exemptNamespaces", [])
+          namespace == exemptNamespaces[_]
+      }
