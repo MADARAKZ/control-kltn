@@ -25,6 +25,10 @@ spec:
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
+
+      exempt_images := object.get(input.parameters, "exemptImages", [])
+      is_exempt(img) { exempt_images[_] == img }
+
       package norootcontainers
 
       exempt_images := object.get(input.parameters, "exemptImages", [])
