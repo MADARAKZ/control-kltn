@@ -1,0 +1,53 @@
+{
+  "generated_at": "2025-12-08T15:54:26.457301Z",
+  "policy_spec": {
+    "policy_id": "no-root-containers",
+    "policy_type": "no-root-containers",
+    "intent": "create",
+    "description": "policies no-root-containers to exempt images redis",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {
+      "exemptImages": [
+        "redis"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-wut1kk78/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-wut1kk78/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
