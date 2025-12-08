@@ -1,13 +1,3 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- constraints/cis-image-allowed-repo-constraint.yaml
-- constraints/cis-requiredlabels-constraint.yaml
-- constraints/no-latest-image-constraint.yaml
-- constraints/no-root-containers-constraint.yaml
-- constraints/no-secrets-as-env-constraint.yaml
-- templates/cis-image-allowed-repo-template.yaml
-- templates/cis-requiredlabels-template.yaml
-- templates/no-latest-image-template.yaml
-- templates/no-root-containers-template.yaml
-- templates/no-secrets-as-env-template.yaml
