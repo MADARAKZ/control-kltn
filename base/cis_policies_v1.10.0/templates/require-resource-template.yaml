@@ -1,0 +1,48 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: require-resource
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireResource
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package gatekeeper.require_resource
+
+      violation[{"msg": msg, "details": {"container": container_name}}] {
+          container := input.review.object.spec.containers[_]
+          container_name := object.get(container, "name", "")
+          not hasResources(container)
+          msg := sprintf("container %v must have resource requests or limits", [container_name])
+      }
+
+      violation[{"msg": msg, "details": {"container": container_name}}] {
+          container := input.review.object.spec.initContainers[_]
+          container_name := object.get(container, "name", "")
+          not hasResources(container)
+          msg := sprintf("initContainer %v must have resource requests or limits", [container_name])
+      }
+
+      violation[{"msg": msg, "details": {"container": container_name}}] {
+          container := input.review.object.spec.ephemeralContainers[_]
+          container_name := object.get(container, "name", "")
+          not hasResources(container)
+          msg := sprintf("ephemeralContainer %v must have resource requests or limits", [container_name])
+      }
+
+      hasResources(container) {
+          resources := object.get(container, "resources", {})
+          requests := object.get(resources, "requests", {})
+          limits := object.get(resources, "limits", {})
+          count(requests) > 0
+          or count(limits) > 0
+      }
