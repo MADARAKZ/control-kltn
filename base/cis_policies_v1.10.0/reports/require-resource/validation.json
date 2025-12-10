@@ -1,0 +1,47 @@
+{
+  "generated_at": "2025-12-10T16:11:39.447539Z",
+  "policy_spec": {
+    "policy_id": "require-resource",
+    "policy_type": "require-resource",
+    "intent": "create",
+    "description": "create policies require resource for pod",
+    "target_kinds": [
+      "Pod"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-61y2zden/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-61y2zden/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
