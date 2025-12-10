@@ -1,0 +1,20 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: BanishUseNamespaceDefault
+metadata:
+  name: banish-use-namespace-default
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - Pod
+    - Deployment
+    - StatefulSet
+    namespaces:
+      include:
+      - default
+      exclude:
+      - kube-system
+      - gatekeeper-system
+  parameters: {}

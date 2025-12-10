@@ -1,0 +1,25 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: banishusenamespacedefault
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: BanishUseNamespaceDefault
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package banish_use_namespace_default
+
+      violation[{"msg": msg, "details": {"namespace": ns}}] {
+        ns := input.review.object.metadata.namespace
+        ns == "default"
+        msg := sprintf("Namespace %q is not allowed", [ns])
+      }
