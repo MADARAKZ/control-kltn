@@ -1,0 +1,21 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: SeccompDefault
+metadata:
+  name: seccomp-default
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - '*'
+      kinds:
+      - Pod
+      - Deployment
+      - StatefulSet
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+  parameters:
+    seccompDefault: true
