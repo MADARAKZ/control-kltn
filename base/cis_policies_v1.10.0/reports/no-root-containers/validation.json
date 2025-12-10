@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-12-08T16:00:20.731734Z",
+  "generated_at": "2025-12-10T14:51:45.715636Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "policies no-root-containers to exempt images nginx:1.24.0",
+    "description": "update no-root-containers to exempt images nginx",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -20,7 +20,7 @@
     "enforcement": "dryrun",
     "parameters": {
       "exemptImages": [
-        "nginx:1.24.0"
+        "nginx"
       ]
     },
     "references": [],
@@ -29,13 +29,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-lzsnd2e4/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-rava8mm_/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-lzsnd2e4/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-rava8mm_/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
@@ -44,7 +44,9 @@
     "valid": true,
     "score": 100,
     "errors": [],
-    "warnings": [],
+    "warnings": [
+      "LLM validation unavailable: object of type 'NoneType' has no len()"
+    ],
     "suggestions": [],
     "corrected_rego": null,
     "corrected_schema": null,
