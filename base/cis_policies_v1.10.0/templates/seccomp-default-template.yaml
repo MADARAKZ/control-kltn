@@ -1,0 +1,69 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: seccompdefault
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: SeccompDefault
+      validation:
+        openAPIV3Schema:
+          openAPIV3Schema:
+            type: object
+            properties:
+              seccompDefault:
+                type: boolean
+                description: Require seccomp default profile
+            required:
+            - seccompDefault
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package seccompdefault
+
+      violation[{
+        "msg": msg,
+        "details": details
+      }] {
+        input.parameters.seccompDefault
+        container := input.review.object.spec.containers[_]
+        not container.seccompProfile
+        msg := sprintf("Container %s missing seccompProfile", [container.name])
+        details := {"container": container.name}
+      }
+
+      violation[{
+        "msg": msg,
+        "details": details
+      }] {
+        input.parameters.seccompDefault
+        container := input.review.object.spec.containers[_]
+        container.seccompProfile.type != "RuntimeDefault"
+        msg := sprintf("Container %s seccompProfile.type is %s, expected RuntimeDefault", [container.name, container.seccompProfile.type])
+        details := {"container": container.name, "type": container.seccompProfile.type}
+      }
+
+      violation[{
+        "msg": msg,
+        "details": details
+      }] {
+        input.parameters.seccompDefault
+        container := input.review.object.spec.template.spec.containers[_]
+        not container.seccompProfile
+        msg := sprintf("Container %s missing seccompProfile", [container.name])
+        details := {"container": container.name}
+      }
+
+      violation[{
+        "msg": msg,
+        "details": details
+      }] {
+        input.parameters.seccompDefault
+        container := input.review.object.spec.template.spec.containers[_]
+        container.seccompProfile.type != "RuntimeDefault"
+        msg := sprintf("Container %s seccompProfile.type is %s, expected RuntimeDefault", [container.name, container.seccompProfile.type])
+        details := {"container": container.name, "type": container.seccompProfile.type}
+      }

@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
 - constraints/banish-use-namespace-default-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
+- constraints/seccomp-default-constraint.yaml
 - templates/banish-use-namespace-default-template.yaml
 - templates/no-root-containers-template.yaml
+- templates/seccomp-default-template.yaml
