@@ -1,7 +1,7 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: RequireResource
 metadata:
-  name: require-resource
+  name: requireresource
   annotations:
     argocd.argoproj.io/sync-wave: '0'
 spec:
