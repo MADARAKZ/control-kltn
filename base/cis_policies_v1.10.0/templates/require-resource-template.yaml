@@ -1,7 +1,7 @@
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
-  name: require-resource
+  name: requireresource
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
 spec:
