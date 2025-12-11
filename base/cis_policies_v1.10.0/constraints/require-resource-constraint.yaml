@@ -16,4 +16,7 @@ spec:
       exclude:
       - kube-system
       - gatekeeper-system
+    excludedNamespaces:
+    - gatekeeper-system
+    - kube-system
   parameters: {}
