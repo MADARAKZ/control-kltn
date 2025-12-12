@@ -1,0 +1,52 @@
+{
+  "generated_at": "2025-12-12T14:24:06.018893Z",
+  "policy_spec": {
+    "policy_id": "no-system-masters-group",
+    "policy_type": "no-system-masters-group",
+    "intent": "create",
+    "description": "Avoid use of system:masters group",
+    "target_kinds": [
+      "RoleBinding",
+      "ClusterRoleBinding"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "disallowedGroups": [
+        "system:masters"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-eexepvvt/base/cis_policies_v1.10.0/templates/no-system-masters-group-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-eexepvvt/base/cis_policies_v1.10.0/constraints/no-system-masters-group-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
