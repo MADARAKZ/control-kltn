@@ -1,9 +1,9 @@
 {
-  "generated_at": "2025-12-12T18:01:49.742415Z",
+  "generated_at": "2025-12-12T18:12:46.554301Z",
   "policy_spec": {
     "policy_id": "no-privileged-containers",
     "policy_type": "no-privileged-containers",
-    "intent": "create",
+    "intent": "modify",
     "description": "Minimize admission of privilege container",
     "target_kinds": [
       "Pod",
@@ -25,13 +25,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-t753fz85/base/cis_policies_v1.10.0/templates/no-privileged-containers-template.yaml",
+      "target": "/tmp/mcp-snr3ub45/base/cis_policies_v1.10.0/templates/no-privileged-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-t753fz85/base/cis_policies_v1.10.0/constraints/no-privileged-containers-constraint.yaml",
+      "target": "/tmp/mcp-snr3ub45/base/cis_policies_v1.10.0/constraints/no-privileged-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
