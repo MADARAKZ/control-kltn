@@ -5,7 +5,9 @@ resources:
 - templates/no-privileged-containers-template.yaml
 - templates/no-root-containers-template.yaml
 - templates/require-namespace-networkpolicy-template.yaml
+- templates/require-resource-template.yaml
 - constraints/no-hostpath-constraint.yaml
 - constraints/no-privileged-containers-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/require-namespace-networkpolicy-constraint.yaml
+- constraints/require-resource-constraint.yaml

@@ -1,0 +1,41 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requireresource
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireResource
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package require_resource
+
+      violation[message] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        container_name := object.get(container, "name", "unknown")
+        reqs := object.get(container, "resources", {})
+        requests := object.get(reqs, "requests", {})
+        cpu := object.get(requests, "cpu", null)
+        cpu == null
+        message := sprintf("Container %q missing cpu request", [container_name])
+      }
+
+      violation[message] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        container_name := object.get(container, "name", "unknown")
+        reqs := object.get(container, "resources", {})
+        requests := object.get(reqs, "requests", {})
+        memory := object.get(requests, "memory", null)
+        memory == null
+        message := sprintf("Container %q missing memory request", [container_name])
+      }
