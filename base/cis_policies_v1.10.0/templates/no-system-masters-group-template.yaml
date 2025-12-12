@@ -29,7 +29,7 @@ spec:
           input.review.kind.kind == "RoleBinding" or input.review.kind.kind == "ClusterRoleBinding"
           subject := input.review.object.subjects[_]
           subject.kind == "Group"
-          disallowed := object.get(input.parameters, "disallowedGroups", [])
+          disallowed := object.get(input.parameters, "disallowedGroups", ["system:masters"])
           disallowedGroup := disallowed[_]
           subject.name == disallowedGroup
           msg := sprintf("Use of disallowed group %q in %s", [subject.name, input.review.kind.kind])
