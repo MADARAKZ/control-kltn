@@ -20,8 +20,7 @@ spec:
       - ''
       kinds:
       - StatefulSet
-    namespaces:
-      exclude:
-      - kube-system
-      - gatekeeper-system
+    excludedNamespaces:
+    - gatekeeper-system
+    - kube-system
   parameters: {}
