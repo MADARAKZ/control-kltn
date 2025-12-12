@@ -1,0 +1,43 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nohostpath
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package no_hostpath
+
+      violation[{
+          "msg": msg,
+          "details": {"volume": vol.name}
+      }] {
+          kind := input.review.object.kind
+          kind == "Pod"
+          volumes := object.get(input.review.object.spec, "volumes", [])
+          vol := volumes[_]
+          vol.hostPath
+          msg := sprintf("HostPath volume %q is not allowed", [vol.name])
+      }
+
+      violation[{
+          "msg": msg,
+          "details": {"volume": vol.name}
+      }] {
+          kind := input.review.object.kind
+          kind != "Pod"
+          volumes := object.get(input.review.object.spec.template.spec, "volumes", [])
+          vol := volumes[_]
+          vol.hostPath
+          msg := sprintf("HostPath volume %q is not allowed", [vol.name])
+      }
