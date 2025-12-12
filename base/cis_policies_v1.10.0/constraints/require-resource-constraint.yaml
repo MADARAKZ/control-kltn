@@ -16,6 +16,7 @@ spec:
     excludedNamespaces:
     - kube-system
     - gatekeeper-system
+    - nginx
   parameters:
     requiredResources:
     - resource
