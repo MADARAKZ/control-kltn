@@ -17,6 +17,8 @@ spec:
               type: array
               items:
                 type: string
+
+  default: ['system:masters']
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
