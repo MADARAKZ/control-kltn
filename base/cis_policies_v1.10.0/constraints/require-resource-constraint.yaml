@@ -13,6 +13,14 @@ spec:
       - ''
       kinds:
       - Pod
+    - apiGroups:
+      - ''
+      kinds:
+      - Deployment
+    - apiGroups:
+      - ''
+      kinds:
+      - StatefulSet
     excludedNamespaces:
     - kube-system
     - gatekeeper-system
