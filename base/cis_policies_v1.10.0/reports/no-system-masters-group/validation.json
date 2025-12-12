@@ -1,9 +1,9 @@
 {
-  "generated_at": "2025-12-12T14:24:06.018893Z",
+  "generated_at": "2025-12-12T15:31:34.165723Z",
   "policy_spec": {
     "policy_id": "no-system-masters-group",
     "policy_type": "no-system-masters-group",
-    "intent": "create",
+    "intent": "modify",
     "description": "Avoid use of system:masters group",
     "target_kinds": [
       "RoleBinding",
@@ -18,7 +18,7 @@
     },
     "enforcement": "deny",
     "parameters": {
-      "disallowedGroups": [
+      "avoidGroups": [
         "system:masters"
       ]
     },
@@ -28,13 +28,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-eexepvvt/base/cis_policies_v1.10.0/templates/no-system-masters-group-template.yaml",
+      "target": "/tmp/mcp-a35w4esl/base/cis_policies_v1.10.0/templates/no-system-masters-group-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-eexepvvt/base/cis_policies_v1.10.0/constraints/no-system-masters-group-constraint.yaml",
+      "target": "/tmp/mcp-a35w4esl/base/cis_policies_v1.10.0/constraints/no-system-masters-group-constraint.yaml",
       "passed": true,
       "errors": []
     }
@@ -43,7 +43,9 @@
     "valid": true,
     "score": 100,
     "errors": [],
-    "warnings": [],
+    "warnings": [
+      "LLM validation unavailable: object of type 'NoneType' has no len()"
+    ],
     "suggestions": [],
     "corrected_rego": null,
     "corrected_schema": null,

@@ -17,6 +17,11 @@ spec:
               type: array
               items:
                 type: string
+            avoidGroups:
+              type: array
+              items:
+                type: string
+              description: Parameter avoidGroups for policy.
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
