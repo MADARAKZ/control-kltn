@@ -18,6 +18,11 @@ spec:
               items:
                 type: string
               description: List of resource names that must be requested by each container
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: Parameter exemptImages for policy.
           required:
           - requiredResources
   targets:

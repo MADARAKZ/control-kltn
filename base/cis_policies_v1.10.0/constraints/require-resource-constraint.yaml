@@ -20,3 +20,5 @@ spec:
   parameters:
     requiredResources:
     - resource
+    exemptImages:
+    - nginx

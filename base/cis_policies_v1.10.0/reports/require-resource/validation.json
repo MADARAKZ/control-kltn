@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-12-12T20:25:14.626112Z",
+  "generated_at": "2025-12-12T20:33:09.075383Z",
   "policy_spec": {
     "policy_id": "require-resource",
     "policy_type": "require-resource",
     "intent": "modify",
-    "description": "update require resource exempt namespace nginx",
+    "description": "update require resource exempt all images nginx",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -14,25 +14,28 @@
       "include": [],
       "exclude": [
         "kube-system",
-        "gatekeeper-system",
-        "nginx"
+        "gatekeeper-system"
       ]
     },
     "enforcement": "deny",
-    "parameters": {},
+    "parameters": {
+      "exemptImages": [
+        "nginx"
+      ]
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-1ezholx7/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
+      "target": "/tmp/mcp-2hratd46/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-1ezholx7/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
+      "target": "/tmp/mcp-2hratd46/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
       "passed": true,
       "errors": []
     }
