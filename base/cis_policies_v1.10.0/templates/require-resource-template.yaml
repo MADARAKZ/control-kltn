@@ -1,0 +1,38 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requireresource
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireResource
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            requiredResources:
+              type: array
+              items:
+                type: string
+              description: List of resource names that must be requested by each container
+          required:
+          - requiredResources
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package requireresource
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        resources := object.get(container, "resources", {})
+        requests := object.get(resources, "requests", {})
+        provided := {resource_type | requests[resource_type]}
+        required := {resource_type | resource_type := input.parameters.requiredResources[_]}
+        missing := required - provided
+        count(missing) > 0
+        msg := sprintf("container %v does not have %v requests defined", [container.name, missing])
+      }
