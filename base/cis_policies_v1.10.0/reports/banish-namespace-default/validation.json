@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-12-12T19:46:53.033405Z",
+  "policy_spec": {
+    "policy_id": "banish-namespace-default",
+    "policy_type": "banish-namespace-default",
+    "intent": "create",
+    "description": "create policies banish use namespace default",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-_qwrg5j9/base/cis_policies_v1.10.0/templates/banish-namespace-default-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-_qwrg5j9/base/cis_policies_v1.10.0/constraints/banish-namespace-default-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
