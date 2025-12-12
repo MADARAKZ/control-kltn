@@ -1,0 +1,55 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: noprivilegedcontainers
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoPrivilegedContainers
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package noprivilegedcontainers
+
+      # Check Pods
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        privileged := object.get(container.securityContext, "privileged", false)
+        privileged == true
+        msg := sprintf("Privileged container %s is not allowed", [container.name])
+      }
+
+      # Check Deployments
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name, "deployment": input.review.object.metadata.name}
+      }] {
+        input.review.kind.kind == "Deployment"
+        container := input.review.object.spec.template.spec.containers[_]
+        privileged := object.get(container.securityContext, "privileged", false)
+        privileged == true
+        msg := sprintf("Privileged container %s in Deployment %s is not allowed", [container.name, input.review.object.metadata.name])
+      }
+
+      # Check StatefulSets
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name, "statefulset": input.review.object.metadata.name}
+      }] {
+        input.review.kind.kind == "StatefulSet"
+        container := input.review.object.spec.template.spec.containers[_]
+        privileged := object.get(container.securityContext, "privileged", false)
+        privileged == true
+        msg := sprintf("Privileged container %s in StatefulSet %s is not allowed", [container.name, input.review.object.metadata.name])
+      }
