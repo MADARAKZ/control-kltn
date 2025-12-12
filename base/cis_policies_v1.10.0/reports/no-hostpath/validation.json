@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-12-12T16:58:00.102630Z",
+  "policy_spec": {
+    "policy_id": "no-hostpath",
+    "policy_type": "no-hostpath",
+    "intent": "create",
+    "description": "Minimize admission of hostpath volume",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-b9q4ir54/base/cis_policies_v1.10.0/templates/no-hostpath-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-b9q4ir54/base/cis_policies_v1.10.0/constraints/no-hostpath-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
