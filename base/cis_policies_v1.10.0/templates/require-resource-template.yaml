@@ -31,8 +31,16 @@ spec:
       package requireresource
 
       violation[{"msg": msg}] {
-        input.review.kind.kind == "Pod"
-        container := input.review.object.spec.containers[_]
+        # Determine the container list based on the resource kind
+        containers := get_containers(input.review)
+
+        # Skip exempted images
+        exemptImages := object.get(input.parameters, "exemptImages", [])
+        container := containers[_]
+        image := object.get(container, "image", "")
+        not contains(exemptImages, image)
+
+        # Check required resources
         resources := object.get(container, "resources", {})
         requests := object.get(resources, "requests", {})
         provided := {resource_type | requests[resource_type]}
@@ -40,4 +48,18 @@ spec:
         missing := required - provided
         count(missing) > 0
         msg := sprintf("container %v does not have %v requests defined", [container.name, missing])
+      }
+
+      # Helper to get containers for different kinds
+      get_containers(review) = containers {
+        review.kind.kind == "Pod"
+        containers := review.object.spec.containers
+      }
+      get_containers(review) = containers {
+        review.kind.kind == "Deployment"
+        containers := review.object.spec.template.spec.containers
+      }
+      get_containers(review) = containers {
+        review.kind.kind == "StatefulSet"
+        containers := review.object.spec.template.spec.containers
       }
