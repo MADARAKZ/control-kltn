@@ -22,8 +22,7 @@ spec:
           "msg": msg,
           "details": {"volume": vol.name}
       }] {
-          kind := input.review.object.kind
-          kind == "Pod"
+          input.review.kind.kind == "Pod"
           volumes := object.get(input.review.object.spec, "volumes", [])
           vol := volumes[_]
           vol.hostPath
@@ -34,8 +33,7 @@ spec:
           "msg": msg,
           "details": {"volume": vol.name}
       }] {
-          kind := input.review.object.kind
-          kind != "Pod"
+          input.review.kind.kind != "Pod"
           volumes := object.get(input.review.object.spec.template.spec, "volumes", [])
           vol := volumes[_]
           vol.hostPath
