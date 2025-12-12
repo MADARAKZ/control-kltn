@@ -1,0 +1,36 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: no-system-masters-group
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoSystemMastersGroup
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            disallowedGroups:
+              type: array
+              items:
+                type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8s.no-system-masters-group
+
+      violation[{
+          "msg": msg,
+          "details": {"subject": subject}
+      }] {
+          input.review.kind.kind == "RoleBinding" or input.review.kind.kind == "ClusterRoleBinding"
+          subject := input.review.object.subjects[_]
+          subject.kind == "Group"
+          disallowed := object.get(input.parameters, "disallowedGroups", [])
+          disallowedGroup := disallowed[_]
+          subject.name == disallowedGroup
+          msg := sprintf("Use of disallowed group %q in %s", [subject.name, input.review.kind.kind])
+      }

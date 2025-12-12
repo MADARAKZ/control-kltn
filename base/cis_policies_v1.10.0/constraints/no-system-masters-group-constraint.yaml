@@ -1,0 +1,19 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoSystemMastersGroup
+metadata:
+  name: no-system-masters-group
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - RoleBinding
+    - ClusterRoleBinding
+    namespaces:
+      exclude:
+      - kube-system
+      - gatekeeper-system
+  parameters:
+    disallowedGroups:
+    - system:masters
