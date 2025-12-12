@@ -1,39 +1,38 @@
 {
-  "generated_at": "2025-12-12T19:36:47.472656Z",
+  "generated_at": "2025-12-12T20:25:14.626112Z",
   "policy_spec": {
     "policy_id": "require-resource",
     "policy_type": "require-resource",
-    "intent": "create",
-    "description": "create policies require resource for pod",
+    "intent": "modify",
+    "description": "update require resource exempt namespace nginx",
     "target_kinds": [
-      "Pod"
+      "Pod",
+      "Deployment",
+      "StatefulSet"
     ],
     "namespaces": {
       "include": [],
       "exclude": [
         "kube-system",
-        "gatekeeper-system"
+        "gatekeeper-system",
+        "nginx"
       ]
     },
     "enforcement": "deny",
-    "parameters": {
-      "requiredResources": [
-        "resource"
-      ]
-    },
+    "parameters": {},
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-na2zhjsk/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
+      "target": "/tmp/mcp-1ezholx7/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-na2zhjsk/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
+      "target": "/tmp/mcp-1ezholx7/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
       "passed": true,
       "errors": []
     }
