@@ -1,0 +1,18 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: NoPrivilegedContainers
+metadata:
+  name: noprivilegedcontainers
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - Pod
+    - Deployment
+    - StatefulSet
+    excludedNamespaces:
+    - gatekeeper-system
+    - kube-system
+  parameters: {}

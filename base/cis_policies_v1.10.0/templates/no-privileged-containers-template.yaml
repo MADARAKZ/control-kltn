@@ -1,0 +1,48 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: noprivilegedcontainers
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoPrivilegedContainers
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package no_privileged_containers
+
+      violation[container] {
+        input.review.object.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        is_privileged(container)
+      }
+
+      violation[container] {
+        input.review.object.kind != "Pod"
+        container := input.review.object.spec.template.spec.containers[_]
+        is_privileged(container)
+      }
+
+      violation[container] {
+        input.review.object.kind != "Pod"
+        container := input.review.object.spec.template.spec.initContainers[_]
+        is_privileged(container)
+      }
+
+      violation[container] {
+        input.review.object.kind != "Pod"
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        is_privileged(container)
+      }
+
+      is_privileged(container) {
+        sc := object.get(container, "securityContext", {})
+        sc.privileged == true
+      }
