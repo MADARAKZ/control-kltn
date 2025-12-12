@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-12-12T16:39:52.092227Z",
+  "generated_at": "2025-12-12T17:26:51.231586Z",
   "policy_spec": {
     "policy_id": "no-privileged-containers",
     "policy_type": "no-privileged-containers",
@@ -18,20 +18,22 @@
       ]
     },
     "enforcement": "deny",
-    "parameters": {},
+    "parameters": {
+      "allowPrivileged": false
+    },
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-v5o625y5/base/cis_policies_v1.10.0/templates/no-privileged-containers-template.yaml",
+      "target": "/tmp/mcp-nejojfr_/base/cis_policies_v1.10.0/templates/no-privileged-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-v5o625y5/base/cis_policies_v1.10.0/constraints/no-privileged-containers-constraint.yaml",
+      "target": "/tmp/mcp-nejojfr_/base/cis_policies_v1.10.0/constraints/no-privileged-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
