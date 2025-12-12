@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-12-12T18:14:57.376642Z",
+  "policy_spec": {
+    "policy_id": "require-namespace-networkpolicy",
+    "policy_type": "require-namespace-networkpolicy",
+    "intent": "create",
+    "description": "require namespace networkpolicy",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [
+        "networkpolicy"
+      ],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "requiredNamespaces": [
+        "networkpolicy"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ievat795/base/cis_policies_v1.10.0/templates/require-namespace-networkpolicy-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ievat795/base/cis_policies_v1.10.0/constraints/require-namespace-networkpolicy-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
