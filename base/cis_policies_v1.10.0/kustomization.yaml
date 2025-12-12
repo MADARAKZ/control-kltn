@@ -2,8 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - templates/hostpath-volume-template.yaml
+- templates/no-persistent-volumes-template.yaml
 - templates/no-privileged-containers-template.yaml
 - templates/no-root-containers-template.yaml
 - constraints/hostpath-volume-constraint.yaml
+- constraints/no-persistent-volumes-constraint.yaml
 - constraints/no-privileged-containers-constraint.yaml
 - constraints/no-root-containers-constraint.yaml

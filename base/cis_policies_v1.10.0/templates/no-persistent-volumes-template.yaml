@@ -1,0 +1,30 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nopersistentvolumes
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoPersistentVolumes
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package no_persistent_volumes
+
+      violation[{"msg": msg, "details": {"resource": input.review.object.metadata.name}}] {
+          volumes := object.get(input.review.object.spec, "volumes", [])
+          volumes := volumes ++ object.get(input.review.object.spec.template.spec, "volumes", [])
+          volume := volumes[_]
+          pvc := object.get(volume, "persistentVolumeClaim", null)
+          pvc != null
+          volName := object.get(volume, "name", "")
+          claimName := object.get(pvc, "claimName", "")
+          msg := sprintf("Volume %v uses PersistentVolumeClaim %v in %v", [volName, claimName, input.review.object.metadata.name])
+      }
