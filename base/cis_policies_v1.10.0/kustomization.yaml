@@ -2,11 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - constraints/banish-use-namespace-default-constraint.yaml
+- constraints/no-hostpath-volume-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/no-system-masters-group-constraint.yaml
 - constraints/require-resource-constraint.yaml
 - constraints/seccomp-default-constraint.yaml
 - templates/banish-use-namespace-default-template.yaml
+- templates/no-hostpath-volume-template.yaml
 - templates/no-root-containers-template.yaml
 - templates/no-system-masters-group-template.yaml
 - templates/require-resource-template.yaml

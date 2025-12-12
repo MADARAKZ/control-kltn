@@ -1,0 +1,34 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: nohostpathvolume
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoHostpathVolume
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+          required: []
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package nohostpathvolume
+
+      violation[{"msg": msg}] {
+        input.review.object.kind == "Pod"
+        volume := input.review.object.spec.volumes[_]
+        volume.hostPath
+        msg := sprintf("Pod %s uses hostPath volume %s", [input.review.object.metadata.name, volume.name])
+      }
+
+      violation[{"msg": msg}] {
+        input.review.object.kind != "Pod"
+        volume := input.review.object.spec.template.spec.volumes[_]
+        volume.hostPath
+        msg := sprintf("%s %s uses hostPath volume %s", [input.review.object.kind, input.review.object.metadata.name, volume.name])
+      }
