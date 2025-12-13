@@ -1,5 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- templates/deny-namespace-default-template.yaml
 - templates/no-root-containers-template.yaml
+- constraints/deny-namespace-default-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
