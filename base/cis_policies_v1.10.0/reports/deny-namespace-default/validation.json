@@ -1,0 +1,55 @@
+{
+  "generated_at": "2025-12-13T08:32:54.057523Z",
+  "policy_spec": {
+    "policy_id": "deny-namespace-default",
+    "policy_type": "deny-namespace-default",
+    "intent": "create",
+    "description": "create policies deny use namespace default exempt nginx:1.25.0",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [
+        "default"
+      ],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "exemptImages": [
+        "nginx:1.25.0"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ey3_56mn/base/cis_policies_v1.10.0/templates/deny-namespace-default-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-ey3_56mn/base/cis_policies_v1.10.0/constraints/deny-namespace-default-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 90,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
