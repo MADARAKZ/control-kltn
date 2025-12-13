@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-12-12T16:07:26.369734Z",
+  "generated_at": "2025-12-13T04:47:40.335756Z",
   "policy_spec": {
     "policy_id": "no-hostpath-volume",
     "policy_type": "no-hostpath-volume",
     "intent": "create",
-    "description": "Minimize admission of hostpath volume",
+    "description": "no-hostpath-volume",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -25,13 +25,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-jp1325tc/base/cis_policies_v1.10.0/templates/no-hostpath-volume-template.yaml",
+      "target": "/tmp/mcp-ptj_rzqi/base/cis_policies_v1.10.0/templates/no-hostpath-volume-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-jp1325tc/base/cis_policies_v1.10.0/constraints/no-hostpath-volume-constraint.yaml",
+      "target": "/tmp/mcp-ptj_rzqi/base/cis_policies_v1.10.0/constraints/no-hostpath-volume-constraint.yaml",
       "passed": true,
       "errors": []
     }
