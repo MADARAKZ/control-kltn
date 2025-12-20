@@ -17,68 +17,74 @@ spec:
               type: array
               items:
                 type: string
+              description: A list of image names to exempt from the policy. Images
+                can be exact matches or use a wildcard at the end (e.g., 'alpine:*').
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
-      package noRootContainers
+      package norootcontainers
 
       violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.containers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("Container '%v' must not run as root", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.initContainers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("InitContainer '%v' must not run as root", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.ephemeralContainers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("EphemeralContainer '%v' must not run as root", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        input.review.kind.kind == "Pod"
+        is_pod
         container := input.review.object.spec.containers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("Container '%v' must not run as root", [container.name])
+        not is_exempt_image(container)
+        not has_security_context(container)
+        msg := sprintf("Container %v in Pod %v has no securityContext defined", [container.name, input.review.name])
       }
 
-      has_non_root(container) {
-        securityContext := object.get(container, "securityContext", {})
-        securityContext.runAsNonRoot == true
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.containers[_]
+        not is_exempt_image(container)
+        not has_security_context(container)
+        msg := sprintf("Container %v in %v %v has no securityContext defined", [container.name, input.review.kind.kind, input.review.name])
       }
 
-      has_non_root(container) {
-        securityContext := object.get(container, "securityContext", {})
-        securityContext.runAsUser > 0
+      violation[{"msg": msg}] {
+        is_pod
+        container := input.review.object.spec.initContainers[_]
+        not is_exempt_image(container)
+        not has_security_context(container)
+        msg := sprintf("InitContainer %v in Pod %v has no securityContext defined", [container.name, input.review.name])
       }
 
-      exempt_list := object.get(input.parameters, "exemptImages", [])
-
-      is_exempt(val) {
-        pattern := exempt_list[_]
-        _matches(val, pattern)
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.initContainers[_]
+        not is_exempt_image(container)
+        not has_security_context(container)
+        msg := sprintf("InitContainer %v in %v %v has no securityContext defined", [container.name, input.review.kind.kind, input.review.name])
       }
 
-      _matches(val, pattern) {
-        val == pattern
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        not is_exempt_image(container)
+        not has_security_context(container)
+        msg := sprintf("EphemeralContainer %v in %v %v has no securityContext defined", [container.name, input.review.kind.kind, input.review.name])
       }
 
-      _matches(val, pattern) {
-        not contains(pattern, ":")
-        startswith(val, concat("", [pattern, ":"]))
+      is_pod {
+        input.review.kind.kind == "Pod"
       }
 
-      _matches(val, pattern) {
-        not contains(pattern, ":")
-        not contains(val, ":")
-        val == pattern
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
+      }
+
+      has_security_context(container) {
+        container.securityContext
+      }
+
+      is_exempt_image(container) {
+        exempt_image := input.parameters.exemptImages[_]
+        not endswith(exempt_image, "*")
+        container.image == exempt_image
+      }
+
+      is_exempt_image(container) {
+        exempt_image := input.parameters.exemptImages[_]
+        endswith(exempt_image, "*")
+        startswith(container.image, trim_suffix(exempt_image, "*"))
       }
