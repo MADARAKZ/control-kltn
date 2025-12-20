@@ -6,6 +6,26 @@ metadata:
     argocd.argoproj.io/sync-wave: '0'
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
-  parameters:
-    exemptImages:
-    - nginx:1.25.0
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+      - StatefulSet
+      - DaemonSet
+      - ReplicaSet
+    - apiGroups:
+      - batch
+      kinds:
+      - Job
+      - CronJob
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+  parameters: {}
