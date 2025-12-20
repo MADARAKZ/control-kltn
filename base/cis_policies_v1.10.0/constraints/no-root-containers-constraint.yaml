@@ -1,15 +1,13 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: NoRootContainers
 metadata:
-  name: no-root-containers
+  name: norootcontainers
   annotations:
     argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   enforcementAction: deny
   match:
-    excludedNamespaces:
-    - kube-system
-    - gatekeeper-system
     kinds:
     - apiGroups:
       - ''
@@ -20,7 +18,16 @@ spec:
       kinds:
       - Deployment
       - StatefulSet
+      - DaemonSet
+      - ReplicaSet
+    - apiGroups:
+      - batch
+      kinds:
+      - Job
+      - CronJob
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
   parameters:
     exemptImages:
-    - redis
-    - nginx:1.24.0
+    - alpine:3.18
