@@ -1,0 +1,54 @@
+{
+  "generated_at": "2025-11-18T15:23:08.356802Z",
+  "policy_spec": {
+    "policy_id": "cis-no-hostpath",
+    "policy_type": "no-hostpath",
+    "intent": "create",
+    "description": "deny hostPath volumes in all namespaces",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "volumes": [
+        "hostPath"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-od3efq3j/base/cis_policies_v1.10.0/templates/cis-no-hostpath-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-od3efq3j/base/cis_policies_v1.10.0/constraints/cis-no-hostpath-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
