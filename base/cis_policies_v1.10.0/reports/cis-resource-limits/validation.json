@@ -1,0 +1,53 @@
+{
+  "generated_at": "2025-11-19T08:51:39.818019Z",
+  "policy_spec": {
+    "policy_id": "cis-resource-limits",
+    "policy_type": "resource-limits",
+    "intent": "create",
+    "description": "th\u00eam",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system",
+        "argocd"
+      ]
+    },
+    "enforcement": "dryrun",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-4snd96v6/base/cis_policies_v1.10.0/templates/cis-resource-limits-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-4snd96v6/base/cis_policies_v1.10.0/constraints/cis-resource-limits-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 95,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [
+      "Consider adding a default value for `resource.spec.containers` in the first `has_resource_limits` function, to handle cases where the resource spec might not explicitly define containers, potentially leading to unexpected behavior.",
+      "The rego contains duplicate functions. Consider refactoring to prevent duplication."
+    ],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
