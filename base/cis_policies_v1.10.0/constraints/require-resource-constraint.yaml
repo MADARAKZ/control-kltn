@@ -1,0 +1,31 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: RequireResource
+metadata:
+  name: requireresource
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+      - StatefulSet
+      - DaemonSet
+      - ReplicaSet
+    - apiGroups:
+      - batch
+      kinds:
+      - Job
+    excludedNamespaces:
+    - kube-system
+    - gatekeeper-system
+    - kubecheck
+  parameters: {}
