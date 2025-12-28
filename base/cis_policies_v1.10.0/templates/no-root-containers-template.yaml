@@ -12,73 +12,41 @@ spec:
       validation:
         openAPIV3Schema:
           type: object
-          properties:
-            exemptImages:
-              type: array
-              items:
-                type: string
+          properties: {}
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
-      package noRootContainers
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.containers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("Container '%v' must not run as root", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.initContainers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("InitContainer '%v' must not run as root", [container.name])
-      }
-
-      violation[{"msg": msg}] {
-        container := input.review.object.spec.template.spec.ephemeralContainers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("EphemeralContainer '%v' must not run as root", [container.name])
-      }
+      package norootcontainers
 
       violation[{"msg": msg}] {
         input.review.kind.kind == "Pod"
         container := input.review.object.spec.containers[_]
-        not has_non_root(container)
-        not is_exempt(container.image)
-        msg := sprintf("Container '%v' must not run as root", [container.name])
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("Container %v must not run as root", [container.name])
       }
 
-      has_non_root(container) {
-        securityContext := object.get(container, "securityContext", {})
-        securityContext.runAsNonRoot == true
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.initContainers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("InitContainer %v must not run as root", [container.name])
       }
 
-      has_non_root(container) {
-        securityContext := object.get(container, "securityContext", {})
-        securityContext.runAsUser > 0
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.containers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("Container %v must not run as root", [container.name])
       }
 
-      exempt_list := object.get(input.parameters, "exemptImages", [])
-
-      is_exempt(val) {
-        pattern := exempt_list[_]
-        _matches(val, pattern)
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.initContainers[_]
+        container.securityContext.runAsNonRoot == false
+        msg := sprintf("InitContainer %v must not run as root", [container.name])
       }
 
-      _matches(val, pattern) {
-        val == pattern
-      }
-
-      _matches(val, pattern) {
-        not contains(pattern, ":")
-        startswith(val, concat("", [pattern, ":"]))
-      }
-
-      _matches(val, pattern) {
-        not contains(pattern, ":")
-        not contains(val, ":")
-        val == pattern
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
       }
