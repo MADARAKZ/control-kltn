@@ -1,0 +1,46 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: restrictcapabilities
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RestrictCapabilities
+      validation:
+        legacySchema: false
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: List of container images that are exempt
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package restrictcapabilities
+
+      is_exempt_image(container) {
+        exempt_image := input.parameters.exemptImages[_]
+        not endswith(exempt_image, "*")
+        container.image == exempt_image
+      }
+      is_exempt_image(container) {
+        exempt_image := input.parameters.exemptImages[_]
+        endswith(exempt_image, "*")
+        startswith(container.image, trim_suffix(exempt_image, "*"))
+      }
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        not is_exempt_image(container)
+        securityContext := object.get(container, "securityContext", {})
+        privileged := object.get(securityContext, "privileged", false)
+        privileged == true
+        msg := sprintf("Container %v is privileged but not exempt", [container.name])
+      }
