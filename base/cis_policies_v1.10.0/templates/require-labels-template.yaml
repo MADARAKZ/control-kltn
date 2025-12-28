@@ -1,0 +1,49 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requirelabels
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            requiredLabels:
+              type: array
+              items:
+                type: string
+              description: List of required labels
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package requireteamorglabels
+
+      violation[{"msg": msg}] {
+        is_workload
+        missing := required_labels - provided_labels
+        count(missing) > 0
+        msg := sprintf("Workload '%v' is missing required labels: %v", [input.review.object.metadata.name, missing])
+      }
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        missing := required_labels - pod_provided_labels
+        count(missing) > 0
+        msg := sprintf("Pod '%v' is missing required labels: %v", [input.review.object.metadata.name, missing])
+      }
+
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
+      }
+
+      required_labels := {label | label := input.parameters.requiredLabels[_]}
+
+      provided_labels := {label | input.review.object.spec.template.metadata.labels[label]}
+
+      pod_provided_labels := {label | input.review.object.metadata.labels[label]}

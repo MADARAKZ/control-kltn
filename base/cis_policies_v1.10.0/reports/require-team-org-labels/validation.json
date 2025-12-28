@@ -1,0 +1,52 @@
+{
+  "generated_at": "2025-12-28T06:21:31.535054Z",
+  "policy_spec": {
+    "policy_id": "require-team-org-labels",
+    "policy_type": "require-labels",
+    "intent": "create",
+    "description": "require labels team and org for deployments",
+    "target_kinds": [
+      "Deployment"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {
+      "requiredLabels": [
+        "team",
+        "org"
+      ]
+    },
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-hkfr_vw_/base/cis_policies_v1.10.0/templates/require-labels-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-hkfr_vw_/base/cis_policies_v1.10.0/constraints/require-labels-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
