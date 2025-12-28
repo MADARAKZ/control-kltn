@@ -19,51 +19,44 @@ spec:
       package requireresource
 
       violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.ephemeralContainers[_]
-        not container.resources.requests
-        msg := sprintf("EphemeralContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        input.review.kind.kind == "Pod"
-        not exempted_namespace
+        is_allowed_namespace
+        is_pod
         container := input.review.object.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
+        msg := sprintf("Pod in namespace %v is using default namespace, which is forbidden", [input.review.namespace])
       }
 
       violation[{"msg": msg}] {
+        is_allowed_namespace
+        is_workload
+        container := input.review.object.spec.template.spec.containers[_]
+        msg := sprintf("Workload in namespace %v is using default namespace, which is forbidden", [input.review.namespace])
+      }
+
+      violation[{"msg": msg}] {
+        is_allowed_namespace
+        is_workload
+        container := input.review.object.spec.template.spec.initContainers[_]
+        msg := sprintf("Workload in namespace %v is using default namespace, which is forbidden", [input.review.namespace])
+      }
+
+      violation[{"msg": msg}] {
+        is_allowed_namespace
+        is_workload
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        msg := sprintf("Workload in namespace %v is using default namespace, which is forbidden", [input.review.namespace])
+      }
+
+      is_pod {
         input.review.kind.kind == "Pod"
-        not exempted_namespace
-        container := input.review.object.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
       }
 
       is_workload {
-        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds := {"Deployment", "StatefulSet", "DaemonSet"}
         kinds[input.review.kind.kind]
       }
 
-      exempted_namespace {
-        excluded_namespaces := {"kube-system", "gatekeeper-system", "nginx"}
-        excluded_namespaces[input.review.namespace]
+      is_allowed_namespace {
+        not input.review.namespace == "default"
+        not input.review.namespace == "kube-system"
+        not input.review.namespace == "gatekeeper-system"
       }
