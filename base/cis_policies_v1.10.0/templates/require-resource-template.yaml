@@ -1,0 +1,85 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requireresource
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireResource
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package requireresource
+
+      violation[{"msg": msg}] {
+        is_pod
+        not exempt_namespace
+        container := input.review.object.spec.containers[_]
+        not has_resource_requests(container)
+        msg := sprintf("Pod '%v' in namespace '%v' is missing resource requests in container '%v'", [input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        not exempt_namespace
+        container := input.review.object.spec.template.spec.containers[_]
+        not has_resource_requests(container)
+        msg := sprintf("%v '%v' in namespace '%v' is missing resource requests in container '%v'", [input.review.kind.kind, input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      violation[{"msg": msg}] {
+        is_pod
+        not exempt_namespace
+        container := input.review.object.spec.initContainers[_]
+        not has_resource_requests(container)
+        msg := sprintf("Pod '%v' in namespace '%v' is missing resource requests in initContainer '%v'", [input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        not exempt_namespace
+        container := input.review.object.spec.template.spec.initContainers[_]
+        not has_resource_requests(container)
+        msg := sprintf("%v '%v' in namespace '%v' is missing resource requests in initContainer '%v'", [input.review.kind.kind, input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      violation[{"msg": msg}] {
+        is_pod
+        not exempt_namespace
+        container := input.review.object.spec.ephemeralContainers[_]
+        not has_resource_requests(container)
+        msg := sprintf("Pod '%v' in namespace '%v' is missing resource requests in ephemeralContainers '%v'", [input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        not exempt_namespace
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        not has_resource_requests(container)
+        msg := sprintf("%v '%v' in namespace '%v' is missing resource requests in ephemeralContainers '%v'", [input.review.kind.kind, input.review.object.metadata.name, input.review.object.metadata.namespace, container.name])
+      }
+
+      has_resource_requests(container) {
+        container.resources.requests
+      }
+
+      exempt_namespace {
+        exempt_namespaces := {"kube-system", "gatekeeper-system", "nginx"}
+        exempt_namespaces[input.review.object.metadata.namespace]
+      }
+
+      is_pod {
+        input.review.kind.kind == "Pod"
+      }
+
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
+      }

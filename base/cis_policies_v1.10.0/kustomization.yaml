@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
 - templates/deny-namespace-default-template.yaml
 - templates/no-root-containers-template.yaml
+- templates/require-resource-template.yaml
 - constraints/deny-namespace-default-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
+- constraints/require-resource-constraint.yaml
