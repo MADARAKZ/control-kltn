@@ -19,51 +19,32 @@ spec:
       package requireresource
 
       violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
+        is_pod
+        not is_exempt
+        msg := sprintf("Pod is using the default namespace", [])
       }
 
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.ephemeralContainers[_]
-        not container.resources.requests
-        msg := sprintf("EphemeralContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
+      is_pod {
         input.review.kind.kind == "Pod"
-        not exempted_namespace
-        container := input.review.object.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
+        input.review.namespace == "default"
       }
 
       violation[{"msg": msg}] {
-        input.review.kind.kind == "Pod"
-        not exempted_namespace
-        container := input.review.object.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
+        is_workload
+        not is_exempt
+        msg := sprintf("%v is using the default namespace", [input.review.kind.kind])
       }
 
       is_workload {
-        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds := {"Deployment", "StatefulSet"}
         kinds[input.review.kind.kind]
+        input.review.namespace == "default"
       }
 
-      exempted_namespace {
-        excluded_namespaces := {"kube-system", "gatekeeper-system", "nginx"}
-        excluded_namespaces[input.review.namespace]
+      is_exempt {
+        input.review.namespace == "kube-system"
+      }
+
+      is_exempt {
+        input.review.namespace == "gatekeeper-system"
       }
