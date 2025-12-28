@@ -1,0 +1,59 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: banishpodrunroo
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: BanishPodRunRoo
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package banishpodrunroo
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        msg := sprintf("Running as root is not allowed in pod %v", [container.name])
+        container.securityContext.runAsUser == 0
+      }
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.initContainers[_]
+        msg := sprintf("Running as root is not allowed in initContainer %v", [container.name])
+        container.securityContext.runAsUser == 0
+      }
+
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.containers[_]
+        msg := sprintf("Running as root is not allowed in container %v", [container.name])
+        container.securityContext.runAsUser == 0
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.initContainers[_]
+        msg := sprintf("Running as root is not allowed in initContainer %v", [container.name])
+        container.securityContext.runAsUser == 0
+      }
+
+      violation[{"msg": msg}] {
+        is_workload
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        msg := sprintf("Running as root is not allowed in ephemeralContainer %v", [container.name])
+        container.securityContext.runAsUser == 0
+      }
