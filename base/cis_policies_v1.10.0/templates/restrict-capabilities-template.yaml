@@ -1,0 +1,50 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: restrictcapabilities
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RestrictCapabilities
+      validation:
+        openAPIV3Schema:
+          openAPIV3Schema:
+            type: object
+            properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package restrictcapabilities
+
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        container.securityContext.capabilities.add[_]
+        msg := sprintf("Container %s has added capabilities", [container.name])
+      }
+
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        input.review.kind.kind == "Deployment"
+        container := input.review.object.spec.template.spec.containers[_]
+        container.securityContext.capabilities.add[_]
+        msg := sprintf("Container %s in Deployment %s has added capabilities", [container.name, input.review.object.metadata.name])
+      }
+
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        input.review.kind.kind == "StatefulSet"
+        container := input.review.object.spec.template.spec.containers[_]
+        container.securityContext.capabilities.add[_]
+        msg := sprintf("Container %s in StatefulSet %s has added capabilities", [container.name, input.review.object.metadata.name])
+      }
