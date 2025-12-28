@@ -1,0 +1,47 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: requireresource
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RequireResource
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package requireresource
+
+      violation[{"msg": msg}] {
+        general_violation[{"msg": msg, "field": "containers"}]
+      }
+
+      general_violation[{"msg": msg, "field": field}] {
+        is_workload
+        container := input.review.object.spec.template.spec[field][_]
+        not is_exempt_namespace
+        msg := sprintf("container %v does not have required resource", [container.name])
+      }
+
+      violation[{"msg": msg}] {
+        input.review.kind.kind == "Pod"
+        container := input.review.object.spec.containers[_]
+        not is_exempt_namespace
+        msg := sprintf("container %v does not have required resource", [container.name])
+      }
+
+      is_workload {
+        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds[input.review.kind.kind]
+      }
+
+      is_exempt_namespace {
+        exempt_namespaces := {"kube-system", "gatekeeper-system", "kubecheck"}
+        exempt_namespaces[input.review.object.metadata.namespace]
+      }
