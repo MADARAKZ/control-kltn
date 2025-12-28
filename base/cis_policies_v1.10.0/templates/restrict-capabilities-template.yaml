@@ -1,0 +1,46 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: restrictcapabilities
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: RestrictCapabilities
+      validation:
+        openAPIV3Schema:
+          openAPIV3Schema:
+            type: object
+            properties:
+              exemptImages:
+                type: array
+                items:
+                  type: string
+            required:
+            - exemptImages
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package restrictcapabilities
+
+      violation[{
+        "msg": msg,
+        "details": details
+      }] {
+        container := input.review.object.spec.containers[_]
+        image := container.image
+        not exempt(image)
+        has_capabilities(container)
+        msg := sprintf("Container %s has restricted capabilities", [container.name])
+        details := {"container": container.name, "image": image}
+      }
+
+      exempt(image) {
+        image := input.parameters.exemptImages[_]
+      }
+
+      has_capabilities(container) {
+        container.securityContext.capabilities.add[_]
+      }
