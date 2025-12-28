@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-12-08T16:00:20.731734Z",
+  "generated_at": "2025-12-28T07:50:48.928956Z",
   "policy_spec": {
     "policy_id": "no-root-containers",
     "policy_type": "no-root-containers",
     "intent": "modify",
-    "description": "policies no-root-containers to exempt images nginx:1.24.0",
+    "description": "banish pod run root",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -17,25 +17,21 @@
         "gatekeeper-system"
       ]
     },
-    "enforcement": "dryrun",
-    "parameters": {
-      "exemptImages": [
-        "nginx:1.24.0"
-      ]
-    },
+    "enforcement": "deny",
+    "parameters": {},
     "references": [],
     "locale": null
   },
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-lzsnd2e4/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
+      "target": "/tmp/mcp-55dcboez/base/cis_policies_v1.10.0/templates/no-root-containers-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-lzsnd2e4/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
+      "target": "/tmp/mcp-55dcboez/base/cis_policies_v1.10.0/constraints/no-root-containers-constraint.yaml",
       "passed": true,
       "errors": []
     }
