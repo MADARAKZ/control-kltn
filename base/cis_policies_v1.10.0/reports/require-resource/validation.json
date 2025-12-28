@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-12-28T06:50:49.710493Z",
+  "generated_at": "2025-12-28T07:37:37.308266Z",
   "policy_spec": {
     "policy_id": "require-resource",
     "policy_type": "require-resource",
     "intent": "modify",
-    "description": "update require-resource exempt namespace nginx",
+    "description": "banish pod run roo",
     "target_kinds": [
       "Pod",
       "Deployment",
@@ -14,8 +14,7 @@
       "include": [],
       "exclude": [
         "kube-system",
-        "gatekeeper-system",
-        "nginx"
+        "gatekeeper-system"
       ]
     },
     "enforcement": "deny",
@@ -26,13 +25,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-7vpiq0tc/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
+      "target": "/tmp/mcp-mqcjcwd4/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-7vpiq0tc/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
+      "target": "/tmp/mcp-mqcjcwd4/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
       "passed": true,
       "errors": []
     }
