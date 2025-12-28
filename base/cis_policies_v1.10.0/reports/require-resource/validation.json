@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-12-28T06:50:49.710493Z",
+  "generated_at": "2025-12-28T09:03:23.559322Z",
   "policy_spec": {
     "policy_id": "require-resource",
     "policy_type": "require-resource",
@@ -26,13 +26,13 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-7vpiq0tc/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
+      "target": "/tmp/mcp-vc63kujw/base/cis_policies_v1.10.0/templates/require-resource-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-7vpiq0tc/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
+      "target": "/tmp/mcp-vc63kujw/base/cis_policies_v1.10.0/constraints/require-resource-constraint.yaml",
       "passed": true,
       "errors": []
     }
