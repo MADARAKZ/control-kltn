@@ -12,7 +12,13 @@ spec:
       validation:
         openAPIV3Schema:
           type: object
-          properties: {}
+          properties:
+            resource:
+              type: string
+              description: The resource to require (e.g. cpu, memory)
+            exemptNamespace:
+              type: string
+              description: The namespace to exempt from this policy
   targets:
   - target: admission.k8s.gatekeeper.sh
     rego: |
@@ -22,48 +28,27 @@ spec:
         is_workload
         not exempted_namespace
         container := input.review.object.spec.template.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
-      }
-
-      violation[{"msg": msg}] {
-        is_workload
-        not exempted_namespace
-        container := input.review.object.spec.template.spec.ephemeralContainers[_]
-        not container.resources.requests
-        msg := sprintf("EphemeralContainer '%v' in %v '%v' does not have resource requests defined", [container.name, input.review.kind.kind, input.review.name])
+        not has_required_resource(container)
+        msg := sprintf("Container '%v' in %v '%v' does not have required resource", [container.name, input.review.kind.kind, input.review.name])
       }
 
       violation[{"msg": msg}] {
         input.review.kind.kind == "Pod"
         not exempted_namespace
         container := input.review.object.spec.containers[_]
-        not container.resources.requests
-        msg := sprintf("Container '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
+        not has_required_resource(container)
+        msg := sprintf("Container '%v' in Pod '%v' does not have required resource", [container.name, input.review.name])
       }
 
-      violation[{"msg": msg}] {
-        input.review.kind.kind == "Pod"
-        not exempted_namespace
-        container := input.review.object.spec.initContainers[_]
-        not container.resources.requests
-        msg := sprintf("InitContainer '%v' in Pod '%v' does not have resource requests defined", [container.name, input.review.name])
+      has_required_resource(container) {
+        container.resources.requests[input.parameters.resource]
       }
 
       is_workload {
-        kinds := {"Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job"}
+        kinds := {"Deployment", "StatefulSet", "DaemonSet"}
         kinds[input.review.kind.kind]
       }
 
       exempted_namespace {
-        excluded_namespaces := {"kube-system", "gatekeeper-system", "nginx"}
-        excluded_namespaces[input.review.namespace]
+        input.review.namespace == input.parameters.exemptNamespace
       }
