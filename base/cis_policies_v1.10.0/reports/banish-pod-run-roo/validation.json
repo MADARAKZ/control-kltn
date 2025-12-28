@@ -1,0 +1,49 @@
+{
+  "generated_at": "2025-12-28T06:10:10.109687Z",
+  "policy_spec": {
+    "policy_id": "banish-pod-run-roo",
+    "policy_type": "banish-pod-run-roo",
+    "intent": "create",
+    "description": "banish pod run roo",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-nsttw03s/base/cis_policies_v1.10.0/templates/banish-pod-run-roo-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-nsttw03s/base/cis_policies_v1.10.0/constraints/banish-pod-run-roo-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
