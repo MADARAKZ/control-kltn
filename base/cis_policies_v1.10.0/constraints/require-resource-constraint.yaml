@@ -19,14 +19,10 @@ spec:
       - Deployment
       - StatefulSet
       - DaemonSet
-      - ReplicaSet
-    - apiGroups:
-      - batch
-      kinds:
-      - Job
-      - CronJob
     excludedNamespaces:
     - kube-system
     - gatekeeper-system
     - nginx
-  parameters: {}
+  parameters:
+    resource: cpu
+    exemptNamespace: nginx
