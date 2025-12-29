@@ -1,0 +1,51 @@
+{
+  "generated_at": "2025-12-29T17:39:51.773137Z",
+  "policy_spec": {
+    "policy_id": "no-privilege-escalation",
+    "policy_type": "no-privilege-escalation",
+    "intent": "create",
+    "description": "Create policies banish containers that allow privilege escalation",
+    "target_kinds": [
+      "Pod",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "namespaces": {
+      "include": [],
+      "exclude": [
+        "kube-system",
+        "gatekeeper-system"
+      ]
+    },
+    "enforcement": "deny",
+    "parameters": {},
+    "references": [],
+    "locale": null
+  },
+  "static_validation": [
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-nn358s8j/base/cis_policies_v1.10.0/templates/no-privilege-escalation-template.yaml",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "tool": "kubeconform",
+      "target": "/tmp/mcp-nn358s8j/base/cis_policies_v1.10.0/constraints/no-privilege-escalation-constraint.yaml",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "llm_validation": {
+    "valid": true,
+    "score": 100,
+    "errors": [],
+    "warnings": [
+      "LLM validation unavailable: object of type 'NoneType' has no len()"
+    ],
+    "suggestions": [],
+    "corrected_rego": null,
+    "corrected_schema": null,
+    "corrected_constraint_spec": null
+  }
+}
