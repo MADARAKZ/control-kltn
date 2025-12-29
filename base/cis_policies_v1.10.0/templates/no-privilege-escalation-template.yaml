@@ -1,0 +1,42 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: noprivilegeescalation
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  crd:
+    spec:
+      names:
+        kind: NoPrivilegeEscalation
+      validation:
+        legacySchema: false
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package no_privilege_escalation
+
+      # Check Pods
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        container := input.review.object.spec.containers[_]
+        allow := object.get(container.securityContext, "allowPrivilegeEscalation", true)
+        allow == true
+        msg := sprintf("Container %s allows privilege escalation", [container.name])
+      }
+
+      # Check Deployments and StatefulSets
+      violation[{
+        "msg": msg,
+        "details": {"container": container.name}
+      }] {
+        container := input.review.object.spec.template.spec.containers[_]
+        allow := object.get(container.securityContext, "allowPrivilegeEscalation", true)
+        allow == true
+        msg := sprintf("Container %s allows privilege escalation", [container.name])
+      }

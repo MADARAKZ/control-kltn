@@ -1,7 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- templates/no-privilege-escalation-template.yaml
 - templates/no-root-containers-template.yaml
 - templates/require-resource-template.yaml
+- constraints/no-privilege-escalation-constraint.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/require-resource-constraint.yaml
