@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-12-29T15:51:52.117709Z",
+  "generated_at": "2025-12-28T17:36:18.078667Z",
   "policy_spec": {
     "policy_id": "restrict-capabilities",
     "policy_type": "restrict-capabilities",
@@ -27,20 +27,20 @@
   "static_validation": [
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-cd6j2ady/base/cis_policies_v1.10.0/templates/restrict-capabilities-template.yaml",
+      "target": "/tmp/mcp-6q_pwxys/base/cis_policies_v1.10.0/templates/restrict-capabilities-template.yaml",
       "passed": true,
       "errors": []
     },
     {
       "tool": "kubeconform",
-      "target": "/tmp/mcp-cd6j2ady/base/cis_policies_v1.10.0/constraints/restrict-capabilities-constraint.yaml",
+      "target": "/tmp/mcp-6q_pwxys/base/cis_policies_v1.10.0/constraints/restrict-capabilities-constraint.yaml",
       "passed": true,
       "errors": []
     }
   ],
   "llm_validation": {
     "valid": true,
-    "score": 95,
+    "score": 100,
     "errors": [],
     "warnings": [],
     "suggestions": [],
