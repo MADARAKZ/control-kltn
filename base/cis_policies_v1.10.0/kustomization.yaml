@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
 - templates/no-root-containers-template.yaml
 - templates/require-resource-template.yaml
+- templates/restrict-capabilities-template.yaml
 - constraints/no-root-containers-constraint.yaml
 - constraints/require-resource-constraint.yaml
+- constraints/restrict-capabilities-constraint.yaml
