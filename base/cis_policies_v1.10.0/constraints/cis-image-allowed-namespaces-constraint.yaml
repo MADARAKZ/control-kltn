@@ -1,0 +1,31 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: ImageAllowedNamespaces
+metadata:
+  name: cis-exempt-namespace
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  enforcementAction: dryrun
+  match:
+    kinds:
+    - apiGroups:
+      - ''
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - Deployment
+    - apiGroups:
+      - apps
+      kinds:
+      - StatefulSet
+    excludedNamespaces:
+    - argocd
+    - config-management-system
+    - gatekeeper-system
+    - kube-system
+    - kube-public
+    - kube-node-lease
+    - devlake
+  parameters: {}
